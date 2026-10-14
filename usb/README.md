@@ -1,69 +1,52 @@
-# onetest / usb — USB host-controller proxy model
+# usb -- USB host model (Linux proxy)
 
-A model of the **Linux USB host stack** (xHCI + USB core + mass-storage class)
-that runs **without the Linux OS**: it replays what the kernel does, on a
-standard AXI4 boundary, so a USB controller (DUT) can be verified the same way
-whether it is simulated or on real silicon.
+This class models the Linux side of USB: the xHCI/DWC controller driver plus
+everything Linux does above it (device enumeration, configuration selection,
+endpoint management, class drivers).  Organised as **subclass -> IP vendor ->
+IP model**, plus a key table keyed by the name Linux uses for an IP (DTS
+`compatible`).
 
-Part of the **onetest** family — every model in this repository exposes the same
-three benefits:
+## Supported vendor IP models
 
-1. **One interface for every vendor.** Feature sets, versions and maturity of
-   vendor VIPs stop mattering; you drive one model.
-2. **The simulation matches Linux, byte for byte.** The sequences come from the
-   kernel sources, not from our interpretation of them.
-3. **One standard AXI4 boundary.** Easier to drop onto your NoC, less to port.
+| Subclass | IP vendor | IP model | Linux key (DTS `compatible`) | Status |
+|---|---|---|---|---|
+| dwc3 | **Synopsys** | **DWC_usb3 2.50a (xHCI 1.0)** -- DRD, GSNPSID 0x5533250a | `snps,dwc3` | built |
+| dwc2 | **Synopsys** | DWC2 (USB 2.0 OTG) | `snps,dwc2` | to-do |
+| cdns3 | **Cadence** | USB3 (CDNS3) | `cdns,usb3` | to-do |
 
-## What you get
+Reference driver (kernel): `drivers/usb/dwc3/` for the built model.
 
-```
-include/  usb_ioctl_ref.h   control-plane ABI you program against
-          kshim_api.h       the primitive layer's contract
-          xhci_regs.h       standard xHCI registers + TRB layout
-          host_ops.h        the vendor boundary (see below)
-evt_chain.h/.c              interrupt dispatch, by event TRB type
-lib/      libusb_model.a    the model (prebuilt)
-smoke/    tb_usmoke.c       smoke test: build it, run it, then swap in your DUT
-docs/                       design / verification / integration notes
-```
+Two vendors run the same test suite in the built model (the second is the
+demonstration personality used by the "one stack runs two vendors" criterion);
+switching vendor changes only the ops table.
 
-## Quick start
+| Path | What |
+|---|---|
+| [`include/`](include/)[`lib/`](lib/) | the model's contract headers + prebuilt library |
+| [`hal/`](hal/) | the key table above, with each row's `file:line` |
+| [`class/`](class/) | the class layer: SET_CONFIGURATION / endpoint model / class-driver hooks |
+
+**What "Linux proxy" means here.**  Each model runs the sequence Linux runs:
+registers and link bring-up on the controller side, and the OS-side half above
+it (protocol, enumeration, mapping, queues).  The kernel is the only reference
+used for register semantics and wire formats -- no vendor manuals, no
+reference RTL.
+
+**Driver key table.**  Every row of the table below is a key Linux itself uses
+to bind the driver (a DTS `compatible` from an `of_match_table`), read out of
+the kernel with its `file:line`.  Ask for an IP by name and you get either the
+model that drives it or an explicit "not implemented" -- never a silent
+fallback.  Only IP vendors are listed: a chip maker's controller is never
+licensed out, so it can never be a DUT.
+
+## Self-tests
+
+Each delivery ships a smoke test that builds from source against the prebuilt
+library and prints a single verdict line; `--red` injects a fault and asserts
+the checks catch it.
 
 ```sh
-cd smoke
-make && ./tb_usmoke          # expect: SMOKE_GREEN_PASS, 18 criteria
-./tb_usmoke --red            # expect: SMOKE_RED_PASS (the criteria bite)
+cd usb/smoke && make && ./tb_usmoke             # SMOKE_GREEN_PASS
+cd usb/class/smoke && make && ./tb_usbcore    # SMOKE_GREEN_PASS
+
 ```
-
-The smoke test drives the full path — controller registers, a command-ring
-round trip, device enumeration (descriptor chain compared byte for byte against
-a golden copy), and a 512-byte read through SCSI READ(10) over BOT.
-
-## Using it from your testbench
-
-```c
-#include "usb_ioctl_ref.h"
-
-usb_model_init();
-usb_model_ioctl(USB_IOC_ENUM_DEV,   &dev, sizeof dev);   /* enumerate       */
-usb_model_ioctl(USB_IOC_MSC_READ10, &rw,  sizeof rw);    /* read 512 bytes  */
-usb_model_set_map(0x80000000ull, 0x90000000ull);         /* where your DUT sits */
-usb_model_exit();
-```
-
-`host_ops.h` is the vendor boundary: the standard layer never touches a
-register directly, so **swapping vendors means replacing one implementation**
-(and one assembly line) — the protocol layer and all criteria are unchanged.
-
-## Notes and current limits (read these)
-
-* The vendor boundary is proven with **two** implementations — a Synopsys DWC
-  USB3 2.50a (register values taken from the configuration library shipped with
-  the design kit) and a second, deliberately different vendor — and both run
-  the identical criteria to green.
-* Address mapping defaults to the **identity map**. Configure it only if your
-  device does not sit at address 0.
-* **Register side only for now.** The memory side still uses the stub's
-  pool-offset semantics, so `mem_base` is accepted but not yet translated.
-* The history of the fixed defects (seven of them, each with the criterion that
-  caught it) is in `docs/`.
