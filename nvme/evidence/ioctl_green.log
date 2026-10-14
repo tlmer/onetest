@@ -1,0 +1,16 @@
+
+        SystemC 2.3.4-Accellera --- Jul 28 2024 17:37:07
+        Copyright (c) 1996-2022 by all Contributors,
+        ALL RIGHTS RESERVED
+== nvme control-plane (ioctl) smoke (green) ==
+  [PASS] svc-0 before bind: -ENODEV (never a silent success)
+  [PASS] svc-1 reset+enable through the ABI (rdy_polls=6)
+  [PASS] svc-2 GET_INFO: attached=1 CC.EN=1 ver=0x00010400 csts=0x00000001
+  [PASS] svc-3 Create I/O queue pair through the ABI (qid=1 CQ+SQ)
+  [PASS] svc-4 WRITE 4KB through the ABI (cid=3 raw_status=0x0001)
+  [PASS] svc-5 READ back through the ABI, byte-for-byte
+  [PASS] svc-6 GET_STATE ledger: admin=2 io=2 queues=1 timeouts=0
+  == summary: PASS=7 FAIL=0 ==
+TB_NVME_IOCTL PASS
+
+Info: /OSCI/SystemC: Simulation stopped by user.

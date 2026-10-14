@@ -1,0 +1,37 @@
+
+        SystemC 2.3.4-Accellera --- Jul 28 2024 17:37:07
+        Copyright (c) 1996-2022 by all Contributors,
+        ALL RIGHTS RESERVED
+== nvme P0 | L-A prototype bench (green case; AXI4 semantic layer + reference slave + task model) ==
+  [PASS] L-A1 CAP readback: MQES=255 and CSS.NVM(bit37)=1
+  [PASS] L-A1b VS readback = NVMe 1.4 (0x00010400)
+  [PASS] L-A2 CC.EN=1 -> CSTS.RDY polling succeeded (reference gap closed: RDY never written by host)
+  [PASS] L-A2b polling really happened and zero timeouts
+  [PASS] L-A3 Identify(CTRL) completed status=0
+  [PASS] L-A3b Identify VID/SSVID
+  [PASS] L-A3c SN(20B) byte by byte
+  [PASS] L-A3d MN(40B)@24 byte by byte
+  [PASS] L-A3e FR(8B) byte by byte
+  [PASS] L-A3f SQES/CQES/NN bitfields
+  [PASS] L-A3g Identify data 4KB golden image byte by byte (full)
+  [PASS] L-A4 Create I/O CQ(0x05)+SQ(0x01) standard admin flow completed status=0
+  [PASS] L-A5 Set Features(FID 7) completed and result echoes back
+  [PASS] L-A5b Get Features(FID 7) readback = value set (register surface consistent)
+  [PASS] L-A6 Write 4KB (512B x 8, single-page PRP) completed status=0
+  [PASS] L-A6b device media byte by byte = written data
+  [PASS] L-A7 Read 4KB completed status=0
+  [PASS] L-A7b readback byte by byte = written data
+  [PASS] L-A8 Write 16KB (PRP List paging) completed status=0
+  [PASS] L-A8b device media 16KB byte by byte
+  [PASS] L-A8c Read 16KB (PRP List paging) completed status=0
+  [PASS] L-A8d 16KB readback byte by byte
+  [PASS] L-A9 I/O CQ wrapped => phase flip tracked correctly by the task side
+  [PASS] L-A10 Flush completed status=0 (completion reception normal after wrap-around)
+  [PASS] L-A11 AXI4 rules: zero violations (4KB crossing/alignment/address map)
+  [PASS] L-A11b ledger consistent: CQ-full/illegal command/PRP out-of-scope/timeout all 0
+  [PASS] L-A11c counts consistent: device completion interrupts = commands submitted
+  ledger: admin=5 io=5 bursts=118 beats=1853 irq=10 cw(cmd)=5/5
+  == summary: PASS=27 FAIL=0 ==
+TB_NVME_LA PASS
+
+Info: /OSCI/SystemC: Simulation stopped by user.

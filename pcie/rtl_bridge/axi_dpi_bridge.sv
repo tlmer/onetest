@@ -1,29 +1,40 @@
 // ============================================================================
-// axi_dpi_bridge.sv -- PCIe root-complex model <-> AXI4 NoC bridge (SV side)
-//   Pairs with the C side (pcie_axi_dpi_link.c), which drives the model's
-//   AXI4 contract (model/axi4_tlm.h: master pool + route table + irq line).
+// axi_dpi_bridge.sv -- onetest Linux-proxy model <-> AXI4 NoC bridge (SV side)
 //
-//   [*] Interface contract (customer checklist #2, single source
-//       `include/axi4_tlm.h`): AxID width = 4 | outstanding = 8 |
-//       data width = 128 bit (16 B/beat, narrow writes select lanes via WSTRB)
+//   **FAMILY-WIDE FILE** -- one bridge for every onetest line (pcie/usb/
+//   storage/network/smmu/nvme).  The customer-facing interface (module name,
+//   ports, parameters, counters) is IDENTICAL across lines; only the DPI
+//   symbol prefix differs (pcie_/usb_/mmc_/sata_/ufs_/eth_/smmu_/nvme_) so
+//   that several models may coexist in one simulation without symbol clashes.
+//
+//   [*] Interface contract (customer checklist #2): AxID width = 4 |
+//       outstanding = 8 | data width = 128 bit (16 B/beat, narrow writes
+//       select lanes via WSTRB)
 //   => this bridge = an 8-slot in-flight table (in-order within one ID;
 //      different IDs may complete out of order).
 //
 //   Ports
-//     m_*  AXI4 **master**  -> the NoC (model issues register/config/memory)
-//     s_*  AXI4 **slave**   <- the NoC (DUT posted writes: DMA write-back, MSI)
-//     irq  **active-high level** interrupt out (model -> the SoC's interrupt
-//          controller; stays high while pending, falls when the host services it)
+//     m_*     AXI4 **master**  -> the NoC (model issues register/config/memory)
+//     s_*     AXI4 **slave**   <- the NoC (DUT posted writes: DMA write-back, MSI)
+//     irq_out **active-high level** interrupt OUT (model -> the SoC's interrupt
+//             controller; stays high while pending, falls when the host
+//             services it).  Used by pcie (MSI/MSI-X level). Lines whose role
+//             is the *host* (usb/storage/network/smmu) tie it to 1'b0.
+//     irq_in  **active-high level** interrupt IN (the DUT -> the model).
+//             Sampled every clk; on a value change the C side is told
+//             (`c_*_irq_set`), which latches it and runs the line's ISR.
+//             pcie ties it to 1'b0.
 //
-//   DPI  exports (C side calls in) : pcie_axi_submit / pcie_axi_done_ack
-//        imports (SV calls out)    : c_pcie_wdata / c_pcie_rdata / c_pcie_done
-//                                    c_pcie_slv_wbeat / c_pcie_slv_rbeat
-//                                    c_pcie_slv_bresp / c_pcie_irq_level
+//   DPI  exports (C side calls in) : <p>_axi_submit
+//        imports (SV calls out)    : c_<p>_wdata / c_<p>_rdata / c_<p>_done
+//                                    c_<p>_slv_wbeat / c_<p>_slv_rbeat
+//                                    c_<p>_slv_bresp
+//                                    c_<p>_irq_level / c_<p>_irq_set
 // ============================================================================
 `timescale 1ns/1ps
 
 module axi_dpi_bridge #(
-    parameter integer AW        = 64,       // 64-bit PCIe/CPU address
+    parameter integer AW        = 64,       // 64-bit address (host/PCIe-style)
     parameter integer IDW       = 4,        // [*] AxID width = 4 (contract)
     parameter integer DW        = 128,      // [*] data width = 128 bit (contract)
     parameter integer OSLOT     = 8,        // [*] outstanding = 8 (contract)
@@ -102,8 +113,9 @@ module axi_dpi_bridge #(
     output reg              s_rvalid,
     input  wire             s_rready,
 
-    // -- interrupt: ACTIVE HIGH, level --
-    output reg              irq,
+    // -- interrupts: ACTIVE HIGH, level (out = model -> SoC; in = DUT -> model) --
+    output reg              irq_out,
+    input  wire             irq_in,
 
     // -- observation surface (criteria) --
     output reg  [31:0]      n_done,
@@ -141,6 +153,7 @@ module axi_dpi_bridge #(
                                                   output bit [DW-1:0] data);
     import "DPI-C" function void c_pcie_slv_bresp(input longint unsigned addr, input int resp);
     import "DPI-C" function int  c_pcie_irq_level();
+    import "DPI-C" function void c_pcie_irq_set(input int level);
 
     // -- DPI exports: C-side submit (find a free slot; full => return 1 => C retries) --
     export "DPI-C" function pcie_axi_submit;
@@ -302,9 +315,24 @@ module axi_dpi_bridge #(
         end
     end
 
-    // -- interrupt line: ACTIVE HIGH level, sampled from the model --
+    // -- interrupt OUT line: ACTIVE HIGH level, sampled from the model --
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) irq <= 1'b0;
-        else        irq <= (c_pcie_irq_level() != 0);
+        if (!rst_n) irq_out <= 1'b0;
+        else        irq_out <= (c_pcie_irq_level() != 0);
+    end
+
+    // -- interrupt IN line: DUT -> model.  VALUE-CHANGE driven (family rule 7):
+    //    the C side is told only when the level actually changes, and once at
+    //    reset (level 0).  The C side latches it (never a bare level) and
+    //    runs the line's ISR -- see <p>_axi_dpi_link.c.
+    reg irq_in_q;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            irq_in_q <= 1'b0;
+            c_pcie_irq_set(0);
+        end else begin
+            irq_in_q <= irq_in;
+            if (irq_in !== irq_in_q) c_pcie_irq_set(irq_in ? 1 : 0);
+        end
     end
 endmodule

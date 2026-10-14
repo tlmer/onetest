@@ -3,7 +3,7 @@
 #ifndef PCIE_AXI_DPI_LINK_H
 #define PCIE_AXI_DPI_LINK_H
 
-#include "../axi4_tlm.h"
+#include "axi4_tlm.h"
 
 #ifdef __cplusplus
 extern "C" {

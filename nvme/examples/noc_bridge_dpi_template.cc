@@ -4,9 +4,9 @@
 //
 //   Topology (in the real stack, replace the "loopback" in this file with axi_dpi_bridge.sv + your NoC):
 //     task model -> TLM bus -> NocBridge -> DpiLink (C++ side, model/rtl_link_dpi.h)
-//        --rtl_axi_write/read (extern)--> [loopback = stands in for the SV side] --> chip-side bus
+//        --nvme_axi_submit (extern)--> [loopback = stands in for the SV side] --> chip-side bus
 //           -> reference slave + memory
-//        <--c_get_wdata/c_put_rdata/c_axi_done (callbacks)--
+//        <--c_nvme_wdata/c_nvme_rdata/c_nvme_done (callbacks)--
 //   [*] real-stack pairing: rtl_bridge/axi_dpi_bridge.sv (4 slots in flight | AxID=4 | outstanding=4)
 // ============================================================================
 #include "axi4.h"
@@ -19,7 +19,7 @@
 #include <vector>
 
 // -- loopback: stands in for the SV side (real stack = axi_dpi_bridge.sv) --------------------
-//   rtl_axi_write/read land directly on the "chip-side bus" and talk to the C++ side through the
+//   nvme_axi_submit lands directly on the "chip-side bus" and talk to the C++ side through the
 //   three callbacks.
 namespace {
 Axi4Bus* g_chip = nullptr;          // chip-side bus (reference slave + memory attach to it)

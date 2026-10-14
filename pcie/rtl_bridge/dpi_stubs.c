@@ -82,6 +82,17 @@ void c_pcie_slv_bresp(long long unsigned addr, int resp)
 
 int c_pcie_irq_level(void) { return irq_level; }
 
+static int irq_in_lvl = 0, irq_in_ev = 0;
+void c_pcie_irq_set(int level)
+{
+    irq_in_lvl = level;
+    irq_in_ev++;
+    printf("[dpi-c] irq_set level=%d (event #%d)\n", level, irq_in_ev);
+    fflush(stdout);
+}
+
 void tb_set_irq(int lvl) { irq_level = lvl; }
 int tb_slv_wbeats(void) { return slv_wbeats; }
 int tb_slv_rbeats(void) { return slv_rbeats; }
+int tb_irq_in_level(void)  { return irq_in_lvl; }
+int tb_irq_in_events(void) { return irq_in_ev; }

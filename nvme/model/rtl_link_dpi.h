@@ -16,8 +16,8 @@ typedef uint32_t svBitVecVal;
 #endif
 
 extern "C" {
-int  rtl_axi_write(unsigned long long addr, int size, int beats, int id, unsigned long long handle);
-int  rtl_axi_read (unsigned long long addr, int size, int beats, int id, unsigned long long handle);
+int  nvme_axi_submit(unsigned long long addr, int size, int beats, int id,
+                     int is_write, unsigned long long handle);
 }
 
 namespace rtldpi {
@@ -58,9 +58,10 @@ inline void unpack_beat(const svBitVecVal* v, uint8_t* b) {
 
 extern "C" {
 
-inline void c_get_wdata(unsigned long long h, int beat, svBitVecVal* data) {
+inline void c_nvme_wdata(unsigned long long h, int beat, svBitVecVal* data, svBitVecVal* strb) {
     using namespace rtldpi;
     auto it = ctx().pend.find(h);
+    for (int w = 0; w < 2; w++) strb[w] = 0xFFFFFFFFu;   /* [*] DW/8 = 64 bits = 2 words */
     if (it == ctx().pend.end()) { for (int w = 0; w < 16; w++) data[w] = 0; return; }
     const Pending& p = it->second;
     size_t off = (size_t)beat * 64;
@@ -69,7 +70,7 @@ inline void c_get_wdata(unsigned long long h, int beat, svBitVecVal* data) {
     pack_beat(tmp, data);
 }
 
-inline void c_put_rdata(unsigned long long h, int beat, const svBitVecVal* data) {
+inline void c_nvme_rdata(unsigned long long h, int beat, const svBitVecVal* data) {
     using namespace rtldpi;
     auto it = ctx().pend.find(h);
     if (it == ctx().pend.end()) return;
@@ -81,7 +82,7 @@ inline void c_put_rdata(unsigned long long h, int beat, const svBitVecVal* data)
     memcpy(&p.rdata[off], tmp, 64);
 }
 
-inline void c_axi_done(unsigned long long h, int resp) {
+inline void c_nvme_done(unsigned long long h, int resp) {
     using namespace rtldpi;
     auto it = ctx().pend.find(h);
     if (it != ctx().pend.end()) it->second.resp = resp;
@@ -127,8 +128,8 @@ private:
         n_sub++;
         int rc;
         do {
-            rc = is_write ? rtl_axi_write(b.addr, (int)b.size, (int)b.beats, m_id, h)
-                          : rtl_axi_read (b.addr, (int)b.size, (int)b.beats, m_id, h);
+            rc = nvme_axi_submit(b.addr, (int)b.size, (int)b.beats, m_id,
+                                 is_write ? 1 : 0, h);
             if (rc) { n_retry++; ctx().n_retry++; }
         } while (rc);                            
         return h;

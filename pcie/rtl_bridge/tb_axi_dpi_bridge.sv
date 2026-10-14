@@ -36,7 +36,8 @@ module tb_axi_dpi_bridge;
     reg [1:0] s_arburst; reg s_arvalid; wire s_arready;
     wire [IDW-1:0] s_rid; wire [DW-1:0] s_rdata; wire [1:0] s_rresp; wire s_rlast, s_rvalid; reg s_rready;
 
-    wire irq;
+    wire irq_out;
+    reg  irq_in = 1'b0;
     wire [31:0] n_done, n_busy_retry, n_rerr, n_slv_recv, n_slv_miss;
 
     axi_dpi_bridge #(.AW(AW), .IDW(IDW), .DW(DW), .OSLOT(OSLOT)) dut (
@@ -57,7 +58,7 @@ module tb_axi_dpi_bridge;
         .s_arburst(s_arburst), .s_arvalid(s_arvalid), .s_arready(s_arready),
         .s_rid(s_rid), .s_rdata(s_rdata), .s_rresp(s_rresp), .s_rlast(s_rlast),
         .s_rvalid(s_rvalid), .s_rready(s_rready),
-        .irq(irq),
+        .irq_out(irq_out), .irq_in(irq_in),
         .n_done(n_done), .n_busy_retry(n_busy_retry), .n_rerr(n_rerr),
         .n_slv_recv(n_slv_recv), .n_slv_miss(n_slv_miss)
     );
@@ -69,6 +70,8 @@ module tb_axi_dpi_bridge;
     import "DPI-C" function void tb_set_lane(input longint unsigned h, input int lane, input int size);
     import "DPI-C" function int  tb_slv_wbeats();
     import "DPI-C" function int  tb_slv_rbeats();
+    import "DPI-C" function int  tb_irq_in_level();
+    import "DPI-C" function int  tb_irq_in_events();
 
     // ---------------------------------------------------------------- AXI4 slave model
     // serves the bridge master port: AW/W -> B (when wlast); AR -> 1-beat R bursts
@@ -195,13 +198,26 @@ module tb_axi_dpi_bridge;
         slv_write(64'hDEAD0000, 4'hA, 1, 3'd4);
         chk(s_bresp == 2'b11 && n_slv_miss == 1, "C-6.1 DECERR propagates to BRESP and is counted");
 
-        // C-7: interrupt is an active-high LEVEL
+        // C-7: interrupt OUT is an active-high LEVEL
         tb_set_irq(1); repeat (3) @(posedge clk);
-        chk(irq == 1'b1, "C-7.1 irq rises");
+        chk(irq_out == 1'b1, "C-7.1 irq_out rises");
         repeat (5) @(posedge clk);
-        chk(irq == 1'b1, "C-7.2 irq STAYS high while pending (level, not pulse)");
+        chk(irq_out == 1'b1, "C-7.2 irq_out STAYS high while pending (level, not pulse)");
         tb_set_irq(0); repeat (3) @(posedge clk);
-        chk(irq == 1'b0, "C-7.3 irq falls when serviced");
+        chk(irq_out == 1'b0, "C-7.3 irq_out falls when serviced");
+
+        // C-9: interrupt IN (DUT -> model) is pushed on VALUE CHANGE only
+        begin integer ev0;
+            ev0 = tb_irq_in_events();
+            irq_in = 1'b1; repeat (3) @(posedge clk);
+            chk(tb_irq_in_level() == 1 && tb_irq_in_events() == ev0 + 1,
+                "C-9.1 irq_in rise pushed once to the C side");
+            repeat (5) @(posedge clk);
+            chk(tb_irq_in_events() == ev0 + 1, "C-9.2 held level: no repeat pushes (value-change only)");
+            irq_in = 1'b0; repeat (3) @(posedge clk);
+            chk(tb_irq_in_level() == 0 && tb_irq_in_events() == ev0 + 2,
+                "C-9.3 irq_in fall pushed once (level back to 0)");
+        end
 
         // C-8
         chk(n_rerr == 0, "C-8.0 no spurious completion errors");

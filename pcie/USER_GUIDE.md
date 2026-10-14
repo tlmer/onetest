@@ -148,7 +148,7 @@ vendor wide -- the ledger predicate still rejects every other chip maker.
 ## 5. Consistency with Linux
 
 The model is built from the kernel's own work, per function, with a `K:` citation
-on every mechanism (see `model/` sources and `STATUS (internal)`'s criteria tables).
+on every mechanism (see `model/` sources and `STATUS`'s criteria tables).
 The experience is intended to match Linux's: enumeration allocates addresses and
 programs BARs the way `drivers/pci/` does, MSI/MSI-X follow `drivers/pci/msi/`,
 SR-IOV follows `drivers/pci/iov.c`, AER follows `drivers/pci/pcie/aer.c`, power

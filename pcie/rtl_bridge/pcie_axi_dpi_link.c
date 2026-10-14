@@ -130,3 +130,5 @@ int c_pcie_slv_rbeat(long long unsigned addr, int size, int beat, int is_last,
 void c_pcie_slv_bresp(long long unsigned addr, int resp) { (void)addr; (void)resp; }
 
 int c_pcie_irq_level(void) { return pcie_irq_line_level(); }
+
+void c_pcie_irq_set(int level) { static int seen; (void)level; seen++; (void)seen; }
