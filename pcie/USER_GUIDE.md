@@ -7,7 +7,9 @@
 > other side (the DUT).
 >
 > Authority rule: the model is written against the **kernel driver source only**
-> (`K:` citations = linux-6.1.52 tree). No databook, no RTL. Platform values
+> (`K:` citations = the kernel tree; the authority is now **linux-6.18**,
+> and the anchors shipped in this build were taken in the 6.1.52 tree -- a re-anchor sweep is pending).
+> No databook, no RTL. Platform values
 > (window bases/sizes, vector count) are **inputs**, never welded constants.
 
 ---
