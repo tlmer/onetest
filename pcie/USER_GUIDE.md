@@ -146,7 +146,7 @@ vendor wide -- the ledger predicate still rejects every other chip maker.
 ## 5. Consistency with Linux
 
 The model is built from the kernel's own work, per function, with a `K:` citation
-on every mechanism (see `model/` sources and `STATUS`'s criteria tables).
+on every mechanism (see `model/` sources and `STATUS (internal)`'s criteria tables).
 The experience is intended to match Linux's: enumeration allocates addresses and
 programs BARs the way `drivers/pci/` does, MSI/MSI-X follow `drivers/pci/msi/`,
 SR-IOV follows `drivers/pci/iov.c`, AER follows `drivers/pci/pcie/aer.c`, power
@@ -157,6 +157,9 @@ to a full OS — it is the host-side driver behavior, replayed over AXI4.
 
 ```
 pcie/
+├─ rtl_bridge/         **AXI4 NoC attach**: axi_dpi_bridge.sv (+ .veo template,
+│                      C stubs, xsim self-test run_ut.sh) -- THIS is what you
+│                      instantiate to put the model on your NoC
 ├─ include/            public headers (compile against these)
 ├─ lib/                libpcie_model.a (pure C + pthread)
 ├─ build_lib.sh        rebuild the library
