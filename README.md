@@ -21,7 +21,7 @@ as it is complete:
 | Path | What | Status |
 |---|---|---|
 | [`nvme/`](nvme/) | NVMe task-level stimulus model over AXI4 (standard NVMe layout, admin/IO queues, PRP, phase bits) | available |
-| `storage/` | block-storage host models (mmc / ahci / ufs / nvme) + driver key table | in progress |
+| [`storage/`](storage/) | block-storage host models (mmc / ahci / ufs) + driver key table + the unified storage ioctl | available |
 | `usb/` `network/` `pcie/` `smmu/` | the remaining classes | in progress |
 
 Each delivery ships source, a self-test that builds from source, and a single
