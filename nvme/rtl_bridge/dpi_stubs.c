@@ -1,11 +1,5 @@
-// ============================================================================
-// dpi_stubs.c -- C stubs for the bridge's SV-side self-check bench (for a stand-alone xsim run)
-//   Implements the three functions the bridge imports: write-data supply (c_get_wdata) / read-data
-//   sink (c_put_rdata) / completion callback (c_axi_done). The pattern matches the bench's own
-//   recomputation: byte = (h + beat*64 + i) & 0xFF.
-//   [X] difference from the real stack: there these three functions are provided by DpiLink (C++,
-//     see model/rtl_link_dpi.h).
-// ============================================================================
+
+
 #include <stdio.h>
 #include <svdpi.h>
 

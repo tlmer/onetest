@@ -115,9 +115,9 @@ void k_trace(const char *fmt, ...);
 
 #define TRACE(...)   do { if (k_trace_level >= 1) k_trace(__VA_ARGS__); } while (0)
 #define TRACE2(...)  do { if (k_trace_level >= 2) k_trace(__VA_ARGS__); } while (0)
-#define dev_info(dev, ...)  k_log("dw_mmc: " __VA_ARGS__)
-#define dev_err(dev, ...)   k_log("dw_mmc ERR: " __VA_ARGS__)
-#define dev_warn(dev, ...)  k_log("dw_mmc WARN: " __VA_ARGS__)
+#define dev_info(dev, ...)  k_log("model: " __VA_ARGS__)
+#define dev_err(dev, ...)   k_log("model ERR: " __VA_ARGS__)
+#define dev_warn(dev, ...)  k_log("model WARN: " __VA_ARGS__)
 #define dev_dbg(dev, ...)   ((void)0)
 #define pr_debug(...)       ((void)0)
 

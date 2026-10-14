@@ -1,31 +1,5 @@
-// ============================================================================
-// noc_cfg.h -- NoC attach configuration surface ([*] customer-configurable: address map / QoS / ID /
-//   attributes / bridge parameters)
-//   [created 2026-10-11] Scope: the interface layer = standard AXI4 ([X] independent of the NoC model);
-//   everything model-specific => **parameterized** (this file); the customer edits the cfg file only,
-//   no code change needed [OK]
-//
-//   cfg file format (key=value; `#` comments; [section] grouping; missing file => all defaults =
-//   prototype scope):
-//     [addr]                                   # address map (window name = position in NoC address space)
-//     dut_regs = 0x00000000 0x4000
-//     mem      = 0x00100000 0x200000
-//     [task_addr]                              # task-model memory layout (base of each section in host memory)
-//     dev  = 0x00000000
-//     asq  = 0x00100000
-//     acq  = 0x00101000
-//     iosq = 0x00102000
-//     iocq = 0x00103000
-//     prpl = 0x00104000
-//     data = 0x00110000
-//     [master]                                 # master-port attributes (one line per master; fill in per the
-//                                              # customer mapping table when attaching to a NoC)
-//     task = id=1 qos=0 prot=0 cache=0xF user=0
-//     dut  = id=2 qos=0 prot=0 cache=0x0 user=0
-//     [axi]                                    # bridge parameters (contract defaults: AxID=4 / outstanding=4)
-//     outstanding = 4
-//     idw = 4
-// ============================================================================
+
+
 #pragma once
 #include "axi4.h"
 #include <cstdio>
@@ -45,7 +19,7 @@ struct NocMasterAttr {
 };
 
 struct NocCfg {
-    // defaults = prototype scope (consistent with the testbenches)
+    
     std::vector<NocAddrWin>    addr{
         {"dut_regs", 0x000000ull, 0x4000ull},
         {"mem",      0x100000ull, 0x200000ull},
@@ -54,10 +28,10 @@ struct NocCfg {
              task_iosq = 0x102000, task_iocq = 0x103000,
              task_prpl = 0x104000, task_data = 0x110000;
     std::vector<NocMasterAttr> master{{"task", 1, 0, 0, 0xF, 0}, {"dut", 2, 0, 0, 0x0, 0}};
-    int outstanding = 4;      // [*] contract default (configurable)
-    int idw = 4;              // [*] contract default (configurable)
+    int outstanding = 4;      
+    int idw = 4;              
 
-    // -- load (missing file / missing section => keep defaults) --
+    
     static NocCfg load(const char* path) {
         NocCfg c;
         std::ifstream f(path);
@@ -111,7 +85,7 @@ struct NocCfg {
         return c;
     }
 
-    // -- apply: window table (attach to the bus by name) --
+    
     template <typename Map>
     void apply_windows(Axi4Bus& bus, const Map& by_name) const {
         for (const auto& w : addr) {
@@ -120,7 +94,7 @@ struct NocCfg {
                 bus.attach(w.base, w.size, it->second, w.name.c_str());
         }
     }
-    // -- apply: master-port attributes --
+    
     template <typename Map>
     void apply_masters(const Map& by_name) const {
         for (const auto& m : master) {
