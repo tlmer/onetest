@@ -17,6 +17,9 @@ name Linux uses for an IP (DTS `compatible`).
 | ecam | **Synopsys** | DWC PCIe ECAM (root-complex config access) | `snps,dw-pcie-ecam` | to-do |
 | rootport | **Cadence** | Cadence PCIe Host (RC) | `cdns,cdns-pcie-host` | to-do |
 | rootport | **Mobiveil** | Mobiveil GPEX-40 PCIe | `mbvl,gpex40-pcie` | to-do |
+| rootport | Northwest Logic | NWL PCIe Bridge (Xilinx-authored driver) | `xlnx,nwl-pcie-2.11` | to-do |
+| rootport | **Xilinx** | AXI PCIe host bridge | `xlnx,axi-pcie-host-1.00.a` | to-do |
+| rootport | **Xilinx** | Versal CPM / CPM5 PCIe host | `xlnx,versal-cpm-host-1.00`, `xlnx,versal-cpm5-host` | to-do |
 
 **Scope -- host-side working modes only.**  onetest is a Linux proxy, so the class
 covers the modes Linux drives as a host: for PCIe that is **Root Complex mode**.
@@ -26,7 +29,10 @@ serve it -- so endpoint IPs and their drivers (`snps,dw-pcie-ep`,
 of scope and do not appear in the ledger.
 
 **IP vendors only.**  Chip-makers' controllers are never licensed out, so they can
-never be the DUT and never enter the ledger.  Ask for an IP by name and you get
+never be the DUT and never enter the ledger.  *Exception (user-directed, 2026-10-14):*
+the Xilinx-hosted PCIe root blocks above are listed for the customer's Xilinx platform
+flow -- the exception is exactly one vendor wide and the ledger predicate still rejects
+every other chip maker (and endpoint keys in all cases).  Ask for an IP by name and you get
 either the model that drives it or an explicit "not implemented" -- never a
 silent fallback.
 

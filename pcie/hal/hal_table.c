@@ -25,6 +25,19 @@ static const struct pcie_hal_entry g_table[] = {
   "todo", (const struct pcie_ip_ops *)0 },
 { { K_PCIE, "rootport", "Mobiveil", "Mobiveil GPEX-40 PCIe" },
   HAL_KEY_DT, "mbvl,gpex40-pcie", "K:drivers/pci/controller/mobiveil/pcie-mobiveil-plat.c:42",
+  "todo", (const struct pcie_ip_ops *)0 },
+
+{ { K_PCIE, "rootport", "Northwest Logic", "NWL PCIe Bridge (Xilinx driver)" },
+  HAL_KEY_DT, "xlnx,nwl-pcie-2.11", "K:drivers/pci/controller/pcie-xilinx-nwl.c:779",
+  "todo", (const struct pcie_ip_ops *)0 },
+{ { K_PCIE, "rootport", "Xilinx", "AXI PCIe host bridge" },
+  HAL_KEY_DT, "xlnx,axi-pcie-host-1.00.a", "K:drivers/pci/controller/pcie-xilinx.c:609",
+  "todo", (const struct pcie_ip_ops *)0 },
+{ { K_PCIE, "rootport", "Xilinx", "Versal CPM PCIe host" },
+  HAL_KEY_DT, "xlnx,versal-cpm-host-1.00", "K:drivers/pci/controller/pcie-xilinx-cpm.c:645",
+  "todo", (const struct pcie_ip_ops *)0 },
+{ { K_PCIE, "rootport", "Xilinx", "Versal CPM5 PCIe host" },
+  HAL_KEY_DT, "xlnx,versal-cpm5-host", "K:drivers/pci/controller/pcie-xilinx-cpm.c:649",
   "todo", (const struct pcie_ip_ops *)0 }
 };
 

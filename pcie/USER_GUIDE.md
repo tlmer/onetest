@@ -132,9 +132,16 @@ controllers are never licensed out, so they can never be a DUT):
 | rootport | Synopsys | DWC PCIe ECAM | `snps,dw-pcie-ecam` | todo |
 | rootport | Cadence | Cadence PCIe Host (RC) | `cdns,cdns-pcie-host` | todo |
 | rootport | Mobiveil | GPEX-40 PCIe | `mbvl,gpex40-pcie` | todo |
+| rootport | Northwest Logic | NWL PCIe Bridge (Xilinx-authored driver) | `xlnx,nwl-pcie-2.11` | todo |
+| rootport | **Xilinx** | AXI PCIe host bridge | `xlnx,axi-pcie-host-1.00.a` | todo |
+| rootport | **Xilinx** | Versal CPM PCIe host | `xlnx,versal-cpm-host-1.00` | todo |
+| rootport | **Xilinx** | Versal CPM5 PCIe host | `xlnx,versal-cpm5-host` | todo |
 
-Endpoint keys (`snps,dw-pcie-ep`, `cdns,cdns-pcie-ep`, ...) are **not listed on
-purpose**: device mode is out of the onetest scope (see `hal/hal_table.c`).
+Endpoint keys (`snps,dw-pcie-ep`, `cdns,cdns-pcie-ep`, `xlnx,versal-cpm-ep*`, ...) are
+**not listed on purpose**: device mode is out of the onetest scope (see
+`hal/hal_table.c`).  The Xilinx rows are a **user-directed exception** to the
+IP-vendors-only rule (customer's Xilinx platform flow); the exception is exactly one
+vendor wide -- the ledger predicate still rejects every other chip maker.
 
 ## 5. Consistency with Linux
 
