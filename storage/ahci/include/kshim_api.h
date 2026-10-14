@@ -48,12 +48,16 @@ void k_transport32_wr(u64 addr, u32 val);
 void k_mem_read (u64 addr, void *dst, unsigned len);
 void k_mem_write(u64 addr, const void *src, unsigned len);
 
+unsigned k_mem_unmapped_reads(void);
+unsigned k_mem_unmapped_writes(void);
+void     k_mem_miss_watch(void (*cb)(int write, u64 addr, unsigned len));
+
 typedef void (*k_xfer_fn)(void *ctx, bool is_write, uint64_t addr,
                           unsigned char *buf, unsigned len, uint32_t *delay_ns);
 void k_tlm_bind_xfer(k_xfer_fn fn, void *ctx);
 
-#define readl(a)        k_transport32((u64)(a))
-#define writel(v, a)    k_transport32_wr((u64)(a), (u32)(v))
+#define readl(a)        k_be->rd32((u64)(a))
+#define writel(v, a)    k_be->wr32((u64)(a), (u32)(v))
 
 struct k_completion {
     void         *_impl;   

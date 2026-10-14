@@ -276,6 +276,24 @@ SC_MODULE(smoke_top) {
                   "TC-6.3 read/write restored after remap reset");
         }
 
+        
+
+        std::printf("\n[TC-7] unmapped access -> SLVERR + accounted\n");
+        {
+            
+            unsigned before = dut->unmapped();
+            axm_bus_rd32(0x7FFFF000u);
+            CHECK(dut->unmapped() == before + 1u,
+                  "TC-7.1 unmapped read is counted (%u -> %u, not silent)",
+                  before, dut->unmapped());
+            axm_bus_wr32(0x7FFFF000u, 0xDEADBEEFu);
+            CHECK(dut->unmapped() == before + 2u,
+                  "TC-7.2 unmapped write is counted (no silent drop)");
+            (void)axm_bus_rd32(0x300u);
+            CHECK(dut->unmapped() == before + 2u,
+                  "TC-7.3 mapped access does NOT count (no false positives)");
+        }
+
         std::printf("\n---------------- criteria summary ----------------\n");
         std::printf("  PASS = %d\n  FAIL = %d\n", g_pass, g_fail);
 

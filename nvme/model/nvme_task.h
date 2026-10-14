@@ -8,6 +8,13 @@
 //         (2) the completion wait does a **phase-bit (P) check + timeout**
 //     [*] queue creation goes through **standard admin commands** (Create I/O CQ 0x05 -> SQ 0x01) --
 //         the reference part's custom queue table is NOT borrowed
+//   [*] KERNEL ANCHORS (linux-6.1.52 tree -- every layout claim above is cited):
+//       command/CQE layout : K:include/linux/nvme.h:1740 (struct nvme_command) / :1949 (struct nvme_completion)
+//       opcodes            : K:include/linux/nvme.h:785-793 (write 0x01 / read 0x02 ...)
+//                            K:include/linux/nvme.h:1099-1106 (create_sq 0x01 / create_cq 0x05 / identify 0x06 / set/get_features 0x09/0x0a)
+//       identify payloads  : K:include/linux/nvme.h:271 (nvme_id_ctrl) / :390 (nvme_id_ns)
+//       controller regs    : K:include/linux/nvme.h:122-131 (CAP/CC/CSTS/AQA/ASQ/ACQ)
+//       PRP                : K:include/linux/nvme.h:861 (struct nvme_sgl_desc; PRP entries are 64-bit page addresses)
 //   [!] command 64B / CQE 16B bit level (checked against the kernel `include/linux/nvme.h`):
 //     common: opcode[0] flags[1] cid[2] nsid[4] prp1[24] prp2[32] cdw10[40..]
 //     rw:     slba[40..47] length[48] (NLB, 0-based) ; identify: cns[40] ; features: fid[40] dword11[44]

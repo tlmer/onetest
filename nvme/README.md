@@ -7,7 +7,8 @@ pinning the boundary at **AXI4**.
 - Boundary: task model -- **AXI4** -- NVMe controller under test (register slave + DMA master)
 - Command surface: **standard NVMe layout** (CAP/VS/CC/CSTS/NSSR/AQA/ASQ/ACQ + doorbells `0x1000+8n`)
 - Command/completion bit level: per **NVMe 1.4** (checked bit by bit against Linux `include/linux/nvme.h`)
-- Criteria: **27 in L-A + 24 in L-B** (each with a red-case injection; green all green <-> red must FAIL, paired [OK])
+- Criteria: **27 in L-A + 24 in L-B + 14 in L-C + 7 in the control-ABI bench = 72** (each with a red-case
+  injection; green all green <-> red must FAIL, paired [OK])
 
 ## Features
 
@@ -18,6 +19,10 @@ pinning the boundary at **AXI4**.
 - Command builders: **Identify** (CTRL / NS / NS List) | **Set/Get Features** | **Read / Write / Flush**
 - **PRP**: PRP1 single-page direct fetch + **PRP List paging** (>4KB, multiple pages)
 - Multi-queue (256 sets, independent SQ/CQ sizes); memory access through AXI4 block reads/writes (multiples of 64B, 64B aligned)
+- **Control ABI** (`model/nvme_ioctl_ref.h` + `model/nvme_ioctl.cc`): the same family-shape face the other onetest
+  lines expose -- `nvme_ioctl_bind(task)` once, then `nvme_model_ioctl()` with
+  **GET_INFO** (VS/CC/CSTS readback) | **RESET_EN** | **CREATE_IO** | **RW** | **GET_STATE** (ledger).
+  Never silent: unbound => `-ENODEV`, unknown command => `-ENOTTY`, NULL argument => `-EINVAL`
 
 **AXI4 semantic layer** (`model/axi4.h`)
 - Bursts (INCR, <=256 beats) | **byte strobes** | response codes `OKAY/EXOKAY/SLVERR/DECERR`
@@ -62,13 +67,16 @@ model/nvme_dev.h          reference slave (self-test only): standard NVMe layout
                           CQE + phase wrap-around, PRP List paging, CQ-full gate, P1 injection switch
 model/noc_adapter.h        NoC bridge abstraction (RtlLink / NocBridge / LoopbackLink loopback)
 model/rtl_link_dpi.h      DPI link (C++ side; pairs with rtl_bridge/; blocking protocol)
+model/nvme_ioctl_ref.h    control ABI (family shape): command numbers + request/state structs
+model/nvme_ioctl.cc       control ABI implementation over the task model (bind once, then serve)
 tb/tb_nvme_l0.cc          L-A bench: 27 criteria
 tb/tb_nvme_lb.cc          L-B bench: 24 criteria (protocol boundaries)
+tb/tb_nvme_ioctl.cc       control-ABI bench: 7 criteria (green) + injected byte flip => red
 rtl_bridge/               AXI4 <-> DPI bridge (SV side): axi_dpi_bridge.sv (4 slots in flight | AxID=4 | outstanding=4)
                           + axi_dpi_bridge.veo (instantiation template) + self-check bench (run_ut.sh => TB_AXI_DPI_BRIDGE PASS)
 examples/                 customer integration samples x3 (direct DUT / through the NoC bridge / through the DPI link) + build.sh
 docs/                     design notes | verification notes | customer integration guide | NoC attach plan
-run.sh                    one-shot: compile + L-A/L-B green + each red case + both final lines
+run.sh                    one-shot: compile + L-A/L-B/L-C/ioctl green + each red case + all final lines
 ```
 
 ## Build and run
@@ -76,7 +84,7 @@ run.sh                    one-shot: compile + L-A/L-B green + each red case + bo
 Requires **SystemC 2.3.4** (C++14).
 
 ```sh
-sh run.sh                # => TB_NVME_LA PASS + TB_NVME_LB PASS (only the final lines count)
+sh run.sh                # => TB_NVME_LA / TB_NVME_LB / TB_NVME_LC / TB_NVME_IOCTL PASS (only the final lines count)
 sh rtl_bridge/run_ut.sh  # => TB_AXI_DPI_BRIDGE PASS (RTL bridge self-check; needs Vivado xsim)
 sh examples/build.sh     # => three integration samples SMOKE OK
 ```
@@ -185,6 +193,6 @@ reported as success) => **16 status-code criteria fail en masse** -- proof that 
   **data width = 512 bit (64 B/beat)**.  Note this differs from the pcie line's contract (ID=4 / outstanding=8 /
   128 bit); both are configuration inputs, not hard-wired -- see `cfg/noc.cfg` `[axi]`.
 - **Control face** = the task API (`model/nvme_task.h`: reset_enable / create_io / build_* / submit_io /
-  poll_cpl / mem_read / mem_write), not an ioctl ABI.
+  poll_cpl / mem_read / mem_write) **and** the family-shape control ABI (`nvme_model_ioctl()`; see above).
 - Data width **512 bits/beat** (provisional tier), burst **INCR**, **never crosses 4KB** (master BFM auto-splits, bus side re-checks)
 - The reference slave (`model/nvme_dev.h`) is **for self-test**: it only provides a peer so the task model can run; it is **not** a spec for the DUT

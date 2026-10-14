@@ -15,10 +15,11 @@ CXX="g++ -std=c++14 -O0 -I$SC/include -Imodel -L$SC/lib-linux64 -lsystemc"
 cd "$(dirname "$0")"
 mkdir -p evidence
 
-echo "== [1/5] compile (L-A + L-B + L-C) =="
+echo "== [1/6] compile (L-A + L-B + L-C + ioctl) =="
 $CXX -o tb/tb_nvme_l0 tb/tb_nvme_l0.cc || { echo "TB_NVME_LA FAIL(compile failed)"; exit 1; }
 $CXX -o tb/tb_nvme_lb tb/tb_nvme_lb.cc || { echo "TB_NVME_LB FAIL(compile failed)"; exit 1; }
 $CXX -o tb/tb_nvme_lc tb/tb_nvme_lc.cc || { echo "TB_NVME_LC FAIL(compile failed)"; exit 1; }
+$CXX -o tb/tb_nvme_ioctl tb/tb_nvme_ioctl.cc model/nvme_ioctl.cc || { echo "TB_NVME_IOCTL FAIL(compile failed)"; exit 1; }
 
 echo "== [2/3] green case (expect: all green) =="
 ./tb/tb_nvme_l0 > evidence/green.log 2>&1
@@ -60,8 +61,18 @@ echo "   L-C green: PASS=$LCGP FAIL=$LCGF (expect FAIL=0)"
 echo "   L-C red  : FAIL=$LCRF (expect >0; corrupted byte => shadow compare must fail)"
 LC_OK=0; [ "$LCGF" = "0" ] && [ "$LCGP" -gt 0 ] && [ "$LCRF" -gt 0 ] && LC_OK=1
 
+echo "== [6/6] control-plane (ioctl) bench (green + red (byte-flip injection)) =="
+./tb/tb_nvme_ioctl       > evidence/ioctl_green.log 2>&1
+./tb/tb_nvme_ioctl --red > evidence/ioctl_red.log   2>&1
+IOGP=$(grep -c '\[PASS\]' evidence/ioctl_green.log); IOGF=$(grep -c '\[FAIL\]' evidence/ioctl_green.log)
+IORF=$(grep -c '\[FAIL\]' evidence/ioctl_red.log)
+echo "   ioctl green: PASS=$IOGP FAIL=$IOGF (expect FAIL=0)"
+echo "   ioctl red  : FAIL=$IORF (expect >0; injected read-back byte flip => byte-for-byte criterion must go red)"
+IO_OK=0; [ "$IOGF" = "0" ] && [ "$IOGP" -gt 0 ] && [ "$IORF" -gt 0 ] && IO_OK=1
+
 echo
 [ "$LA_OK" = "1" ] && echo "TB_NVME_LA PASS" || echo "TB_NVME_LA FAIL"
 [ "$LB_OK" = "1" ] && echo "TB_NVME_LB PASS" || echo "TB_NVME_LB FAIL"
 [ "$LC_OK" = "1" ] && echo "TB_NVME_LC PASS" || echo "TB_NVME_LC FAIL"
-[ "$LA_OK" = "1" ] && [ "$LB_OK" = "1" ] && [ "$LC_OK" = "1" ] && exit 0 || exit 1
+[ "$IO_OK" = "1" ] && echo "TB_NVME_IOCTL PASS" || echo "TB_NVME_IOCTL FAIL"
+[ "$LA_OK" = "1" ] && [ "$LB_OK" = "1" ] && [ "$LC_OK" = "1" ] && [ "$IO_OK" = "1" ] && exit 0 || exit 1

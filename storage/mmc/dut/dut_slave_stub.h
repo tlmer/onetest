@@ -89,19 +89,28 @@ private:
 
     
 
-    uint32_t bus_read(uint32_t a)
+    
+
+    unsigned m_unmapped = 0;
+public:
+    unsigned unmapped() const { return m_unmapped; }
+private:
+
+    int bus_read(uint32_t a, uint32_t *out)
     {
-        if (a < REG_SIZE)
-            return m_reg[(a & (REG_SIZE - 1)) / 4];
+        if (a < REG_SIZE) { *out = m_reg[(a & (REG_SIZE - 1)) / 4]; return 0; }
         if (a + 4u <= MEM_SIZE) {
             uint32_t v = 0;
             memcpy(&v, &m_mem[a], 4);
-            return v;
+            *out = v;
+            return 0;
         }
-        return 0;
+        m_unmapped++;
+        *out = 0xFFFFFFFFu;                       
+        return -1;
     }
 
-    void bus_write(uint32_t a, uint32_t d, uint32_t strb)
+    int bus_write(uint32_t a, uint32_t d, uint32_t strb)
     {
         if (a < REG_SIZE) {
             uint32_t off = a & (REG_SIZE - 1);
@@ -125,13 +134,16 @@ private:
             }
             if (off != 0x044u)                         
                 m_reg[off / 4] = nv;
-            return;
+            return 0;
         }
         if (a + 4u <= MEM_SIZE) {
             for (int b = 0; b < 4; b++)
                 if (strb & (1u << b))
                     m_mem[a + b] = (uint8_t)((d >> (b * 8)) & 0xFFu);
+            return 0;
         }
+        m_unmapped++;                                  
+        return -1;
     }
 
     
@@ -143,12 +155,12 @@ private:
         switch (m_st) {
         case ST_IDLE:
             if (awvalid.read() && wvalid.read()) {
-                bus_write(awaddr.read().to_uint(), wdata.read().to_uint(),
-                          wstrb.read().to_uint());
-                m_bresp = 0; m_st = ST_BV;
+                m_bresp = (bus_write(awaddr.read().to_uint(), wdata.read().to_uint(),
+                                     wstrb.read().to_uint()) == 0) ? 0u : 2u;   
+                m_st = ST_BV;
             } else if (arvalid.read()) {
-                m_rdata = bus_read(araddr.read().to_uint());
-                m_rresp = 0; m_st = ST_RV;
+                m_rresp = (bus_read(araddr.read().to_uint(), &m_rdata) == 0) ? 0u : 2u;
+                m_st = ST_RV;
             }
             break;
         case ST_BV:

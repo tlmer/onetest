@@ -65,3 +65,18 @@ three fidelity items the sample lacks:
 **CSTS.RDY polling | phase-bit check + timeout | PRP List paging**.
 The reference sample is a mock (no protocol execution, no error paths) => **its value is in the structure
 and the method, not in correctness**.
+
+## 8. Control ABI (family shape)
+
+Besides the direct task API, the line exposes the same control face the other onetest lines use:
+`nvme_ioctl_bind(task)` once, then `nvme_model_ioctl(cmd, arg, len)` (`model/nvme_ioctl_ref.h`).
+Commands: **GET_INFO / RESET_EN / CREATE_IO / RW / GET_STATE**. The face is never silent -- unbound
+=> `-ENODEV`, unknown command => `-ENOTTY`, NULL argument => `-EINVAL`. Benched in
+`tb/tb_nvme_ioctl.cc` (7 criteria, red = injected read-back byte flip).
+
+## 9. Bit-layout authority (K: anchors)
+
+Every layout this model implements is anchored to the kernel header (kernel 6.1.52), recorded in
+the headers next to the code: `struct nvme_command` `K:include/linux/nvme.h:1740`, `struct
+nvme_completion` `:1949`, I/O opcodes `:785-793`, admin opcodes `:1099-1106`, Identify payloads
+`:271/:390`, controller registers `:122-131`.

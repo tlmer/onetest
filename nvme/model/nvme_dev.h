@@ -6,7 +6,8 @@
 //     [*] CC.EN -> CSTS.RDY is set with a delay by the **device side** (5 beats) -- the host must poll
 //         (closes a gap in the reference part)
 //     [*] CQE 16B: DW0-1=result | DW2=sq_head|sq_id<<16 | DW3=CID|status (phase bit + status word)
-//         status-word bitfields per the kernel `include/linux/nvme.h` (local 4.18 source already read):
+//         status-word bitfields per the kernel `include/linux/nvme.h`
+//         (K:include/linux/nvme.h:1949 struct nvme_completion; registers K::122-131; PRP K::861):
 //         raw = (shifted << 1) | P; shifted: SC=bit7:0 | SCT=bit10:8 | M=13 | DNR=14 | CRD=0x1800
 //     [*] PRP: single page (<=4KB) + PRP List paging (>2 pages) -- one of the gaps in survey doc
 //         §4.3, implemented here
