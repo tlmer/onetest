@@ -1,15 +1,12 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * evt_chain.c -- interrupt chain dispatching by event TRB type (USB line)
- * For how this differs from reference, see the explanation in evt_chain.h.
- */
+
+
 #include "evt_chain.h"
 #include <string.h>
 
 #define EVT_SLOT_MAX 8
 
 struct evt_slot {
-    u32         type;       /* 0 = empty slot */
+    u32         type;       
     usb_evt_fn  fn;
     void       *ctx;
     unsigned    hits;
@@ -27,7 +24,7 @@ void usb_evt_bind(u32 type, usb_evt_fn fn, void *ctx)
         if (g_slots[i].type == 0) {
             if (free_slot < 0) free_slot = i;
         } else if (g_slots[i].type == type) {
-            g_slots[i].fn = fn; g_slots[i].ctx = ctx;   /* same type => replace */
+            g_slots[i].fn = fn; g_slots[i].ctx = ctx;   
             return;
         }
     }
@@ -49,7 +46,7 @@ int usb_evt_dispatch(u32 type)
             hit++;
         }
     }
-    return hit;                       /* unregistered type => 0, nothing is done */
+    return hit;                       
 }
 
 unsigned usb_evt_hits(u32 type)
@@ -61,7 +58,6 @@ unsigned usb_evt_hits(u32 type)
     return 0;
 }
 
-/* Clear the registration table (the bench uses it to simulate "all interrupts lost") */
 void usb_evt_reset(void)
 {
     memset(g_slots, 0, sizeof(g_slots));

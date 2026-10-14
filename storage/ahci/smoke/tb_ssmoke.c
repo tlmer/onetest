@@ -1,9 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * tb_ssmoke.c -- SATA proxy model smoke test (public ABI only)
- *   S-1 init/get-info  S-2 IDENTIFY (self-consistent checksum)
- *   S-3 read/write byte-exact  S-4 address map  S-5 unknown ioctl rejected
- */
+
+
 #include "../include/sata_ioctl_ref.h"
 #include <stdio.h>
 #include <string.h>
@@ -48,7 +44,7 @@ int main(int argc, char **argv)
     rw.lba = 100; rw.nsect = 2;
     ret = (int)sata_model_ioctl(SATA_IOC_READ, &rw, sizeof(rw));
     CHECK(ret == 0, "S-3.1 READ 2 sectors rc=%d", ret);
-    for (i = 0; i < 1024; i++) gold[i % 512] = rw.data[i];   /* keep first sector */
+    for (i = 0; i < 1024; i++) gold[i % 512] = rw.data[i];   
     rw.data[7] ^= 0xFF;
     mism = 0;
     for (i = 0; i < 512; i++) if (rw.data[i] != gold[i % 512]) mism++;
@@ -66,7 +62,7 @@ int main(int argc, char **argv)
     ret = (int)sata_model_ioctl(0xdeadbeefu, &info, sizeof(info));
     CHECK(ret == -25, "S-5.1 unknown ioctl rejected rc=%d", ret);
 
-    if (red) {                       /* red case: inject 1 byte => the checksum criterion must FAIL */
+    if (red) {                       
         struct sata_ident id2;
         int s2 = 0, caught;
         memset(&id2, 0, sizeof(id2));

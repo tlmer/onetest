@@ -1,18 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * hal_table.c -- the usb HAL key table (four levels x key)
- *
- * Each row's `kern_src` is where in the KERNEL binding table the key was read
- * from (file:line); chip makers are deliberately absent (their controllers are
- * never licensed out, so they can never be a DUT).
- *
- * status: "built" = model exists under usb/;  "todo" = IP vendor identified.
- */
+
+
 #include "hal.h"
 
-extern const struct usb_ip_ops usb_ops_dwc3;    /* Synopsys DWC_usb3 (the built model,
-                                                   variant 0 = real, variant 1 = the
-                                                   second-vendor demo) */
+extern const struct usb_ip_ops usb_ops_dwc3;    
 
 #ifdef HAL_WITH_USB
 #define OPS_DWC3 (&usb_ops_dwc3)
@@ -31,6 +21,9 @@ static const struct usb_hal_entry g_table[] = {
   "todo", (const struct usb_ip_ops *)0 },
 { { K_USB, "cdns3", "Cadence", "USB3 (CDNS3)" },
   HAL_KEY_DT, "cdns,usb3", "K:drivers/usb/cdns3/cdns3-plat.c:315",
+  "todo", (const struct usb_ip_ops *)0 },
+{ { K_USB, "fotg210", "Faraday", "FOTG210 (USB 2.0 OTG)" },
+  HAL_KEY_DT, "faraday,fotg210", "K:drivers/usb/host/fotg210-hcd.c:5673",
   "todo", (const struct usb_ip_ops *)0 }
 };
 

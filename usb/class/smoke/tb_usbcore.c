@@ -1,15 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * tb_usbcore.c -- USB class layer bench (SET_CONFIGURATION / endpoints / class-driver hooks)
- *
- * The three holes the Linux-proxy audit found for the usb line live here:
- *   (1) SET_CONFIGURATION -- configuration chain walked and installed
- *   (2) interrupt / isochronous endpoints -- typed, interval-checked, altsetting-selected
- *   (3) class-driver hooks -- interface matched against an id table, probe/disconnect called
- *
- * Red case (--red): the accept-anything injection (descriptor checks skipped) must make the
- * rejection criteria go red.
- */
+
+
 #include "../usbcore.h"
 #include <stdio.h>
 #include <string.h>
@@ -19,20 +9,16 @@ static int g_pass, g_fail;
                            else  { g_fail++; printf("  [FAIL] " __VA_ARGS__); } \
                            printf("\n"); } while (0)
 
-/* ---- golden chains, built by hand (the bench is the independent source) ---- */
-
-/* MSC-like device: config1 = interface 0 (class 08/06/50) + 2 bulk endpoints */
 static u32 chain_msc(u8 *b)
 {
     u32 n = 0;
     b[n++]=9; b[n++]=USB_DT_CONFIG; b[n++]=32;b[n++]=0; b[n++]=1; b[n++]=1; b[n++]=0; b[n++]=0x80; b[n++]=50;
     b[n++]=9; b[n++]=USB_DT_INTERFACE; b[n++]=0; b[n++]=0; b[n++]=2; b[n++]=8; b[n++]=6; b[n++]=0x50; b[n++]=0;
-    b[n++]=7; b[n++]=USB_DT_ENDPOINT; b[n++]=0x81; b[n++]=0x02; b[n++]=0x00; b[n++]=0x02; b[n++]=0;   /* IN bulk, 512 */
-    b[n++]=7; b[n++]=USB_DT_ENDPOINT; b[n++]=0x02; b[n++]=0x02; b[n++]=0x00; b[n++]=0x02; b[n++]=0;   /* OUT bulk, 512 */
+    b[n++]=7; b[n++]=USB_DT_ENDPOINT; b[n++]=0x81; b[n++]=0x02; b[n++]=0x00; b[n++]=0x02; b[n++]=0;   
+    b[n++]=7; b[n++]=USB_DT_ENDPOINT; b[n++]=0x02; b[n++]=0x02; b[n++]=0x00; b[n++]=0x02; b[n++]=0;   
     return n;
 }
 
-/* HID-like device: interface (class 3/1/2) + one interrupt IN endpoint, bInterval = 10 */
 static u32 chain_hid(u8 *b, u8 interval)
 {
     u32 n = 0;
@@ -42,25 +28,21 @@ static u32 chain_hid(u8 *b, u8 interval)
     return n;
 }
 
-/* Camera-like device: one interface with two altsettings --
-   alt0 = zero bandwidth (no endpoints), alt1 = two isochronous endpoints.
-   The config descriptor declares interface 0 **twice** (one per alt setting). */
 static u32 chain_cam(u8 *b, u16 isoc_mps)
 {
     u32 n = 0;
     b[n++]=9; b[n++]=USB_DT_CONFIG; b[n++]=63;b[n++]=0; b[n++]=2; b[n++]=1; b[n++]=0; b[n++]=0x80; b[n++]=50;
-    /* alt 0 */
+    
     b[n++]=9; b[n++]=USB_DT_INTERFACE; b[n++]=0; b[n++]=0; b[n++]=0; b[n++]=0x0e; b[n++]=1; b[n++]=0; b[n++]=0;
-    /* alt 1 */
+    
     b[n++]=9; b[n++]=USB_DT_INTERFACE; b[n++]=0; b[n++]=1; b[n++]=2; b[n++]=0x0e; b[n++]=1; b[n++]=0; b[n++]=0;
-    b[n++]=7; b[n++]=USB_DT_ENDPOINT; b[n++]=0x81; b[n++]=0x01;                    /* IN isochronous */
+    b[n++]=7; b[n++]=USB_DT_ENDPOINT; b[n++]=0x81; b[n++]=0x01;                    
     b[n++]=(u8)(isoc_mps & 0xff); b[n++]=(u8)(isoc_mps >> 8); b[n++]=1;
-    b[n++]=7; b[n++]=USB_DT_ENDPOINT; b[n++]=0x02; b[n++]=0x01;                    /* OUT isochronous */
+    b[n++]=7; b[n++]=USB_DT_ENDPOINT; b[n++]=0x02; b[n++]=0x01;                    
     b[n++]=(u8)(isoc_mps & 0xff); b[n++]=(u8)(isoc_mps >> 8); b[n++]=1;
     return n;
 }
 
-/* ---- class-driver stubs (probe/disconnect counters) ---- */
 static int g_storage_probes, g_storage_disc, g_hid_probes;
 static int probe_storage(struct usb_dev_model *d, struct usb_intf_model *i) { (void)d;(void)i; g_storage_probes++; return 0; }
 static void disc_storage(struct usb_dev_model *d, struct usb_intf_model *i) { (void)d;(void)i; g_storage_disc++; }
@@ -68,7 +50,7 @@ static int probe_hid(struct usb_dev_model *d, struct usb_intf_model *i) { (void)
 static const struct usb_class_driver DRV_STORAGE = { "usb-storage", 8, 6, 0x50, probe_storage, disc_storage };
 static const struct usb_class_driver DRV_HID     = { "usbhid",      3, 1, 2,    probe_hid,     0 };
 
-static struct usb_dev_model g_dev;   /* static: the model is big */
+static struct usb_dev_model g_dev;   
 
 int main(int argc, char **argv)
 {
@@ -78,10 +60,10 @@ int main(int argc, char **argv)
     printf("== usb class layer bench: SET_CONFIGURATION / endpoints / class-driver hooks (%s) ==\n",
            red ? "red" : "green");
     if (red) {
-        /* the injection removes the descriptor checks: the U-4.3 / U-5.4 criteria must now go red,
-           i.e. the bad values are silently accepted -- proof the criteria have teeth */
+        
+
         (void)usb_dev_model_init(&g_dev, 3, 2);
-        u32 n = chain_hid(chain, 200);   /* invalid bInterval for high speed (K:config.c:335) */
+        u32 n = chain_hid(chain, 200);   
         int before = usbcore_set_configuration(&g_dev, chain, n, 1);
         CHECK(before == USB_ERANGE, "RED-0 before injection: bInterval=200 rejected (criterion works)");
         usbcore_dbg_faults(1);
@@ -89,7 +71,7 @@ int main(int argc, char **argv)
         CHECK(after == USB_OK,
               "RED-1 checks removed => bInterval=200 silently accepted (rc=%d) => U-4.3 has teeth", after);
         (void)usb_dev_model_init(&g_dev, 4, 1);
-        u32 m = chain_cam(chain, 1024);  /* 1024 > full-speed isochronous ceiling (K:config.c:187) */
+        u32 m = chain_cam(chain, 1024);  
         after = usbcore_set_configuration(&g_dev, chain, m, 1);
         CHECK(after == USB_OK,
               "RED-2 checks removed => isochronous mps=1024 at full speed accepted => U-5.4 has teeth");
@@ -99,8 +81,8 @@ int main(int argc, char **argv)
         return (g_fail == 0 && g_pass > 0) ? 0 : 1;
     }
 
-    /* -- U-1: SET_CONFIGURATION installs the MSC configuration -- */
-    (void)usb_dev_model_init(&g_dev, 3, 2);            /* slot 3, high speed */
+    
+    (void)usb_dev_model_init(&g_dev, 3, 2);            
     u32 n = chain_msc(chain);
     int r = usbcore_set_configuration(&g_dev, chain, n, 1);
     struct usb_intf_model *intf = usbcore_interface(&g_dev, 0);
@@ -109,7 +91,7 @@ int main(int argc, char **argv)
     CHECK(intf && intf->klass == 8 && intf->subclass == 6 && intf->proto == 0x50,
           "U-1.2 interface class 08/06/50 read out of the chain byte for byte");
 
-    /* -- U-2: endpoint lookup is typed -- */
+    
     {
         const struct usb_ep_model *in  = usbcore_ep_find(&g_dev, 0, 0x81, USB_EP_XFER_BULK);
         const struct usb_ep_model *out = usbcore_ep_find(&g_dev, 0, 0x02, USB_EP_XFER_BULK);
@@ -119,7 +101,7 @@ int main(int argc, char **argv)
         CHECK(wrong == 0, "U-2.2 lookup is typed: 0x81 as interrupt => not found (no silent match)");
     }
 
-    /* -- U-3: class-driver hooks -- */
+    
     {
         g_storage_probes = g_storage_disc = g_hid_probes = 0;
         (void)usbcore_register_class_driver(&DRV_STORAGE);
@@ -136,7 +118,7 @@ int main(int argc, char **argv)
               g_storage_disc);
     }
 
-    /* -- U-4: interrupt endpoint interval (high speed: 2^(bInterval-1) microframes) -- */
+    
     {
         (void)usb_dev_model_init(&g_dev, 4, 2);
         u32 m = chain_hid(chain, 10);
@@ -152,9 +134,9 @@ int main(int argc, char **argv)
               "U-4.3 bInterval=200 is out of range for high speed => explicit error (K:config.c:380)");
     }
 
-    /* -- U-5: altsetting selection + isochronous endpoints -- */
+    
     {
-        (void)usb_dev_model_init(&g_dev, 5, 1);                  /* full speed */
+        (void)usb_dev_model_init(&g_dev, 5, 1);                  
         u32 m = chain_cam(chain, 1023);
         int rr = usbcore_set_configuration(&g_dev, chain, m, 1);
         struct usb_intf_model *a0 = usbcore_interface(&g_dev, 0);
@@ -173,12 +155,12 @@ int main(int argc, char **argv)
               "U-5.4 isochronous mps=1024 at full speed => rejected (K:config.c:187)");
     }
 
-    /* -- U-6: malformed chains are rejected, never silently accepted -- */
+    
     {
         u8 bad[32];
         (void)usb_dev_model_init(&g_dev, 6, 2);
         memset(bad, 0, sizeof(bad));
-        bad[0] = 0; bad[1] = USB_DT_CONFIG;                     /* bLength = 0 */
+        bad[0] = 0; bad[1] = USB_DT_CONFIG;                     
         CHECK(usbcore_set_configuration(&g_dev, bad, 32, 1) == USB_EINVAL,
               "U-6.1 bLength=0 => EINVAL (no infinite walk)");
         u32 m = chain_msc(chain);

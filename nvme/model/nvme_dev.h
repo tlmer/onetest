@@ -336,7 +336,7 @@ public:
         put16(&b[0], 0x1234);                               // VID
         put16(&b[2], 0x5678);                               // SSVID
         memcpy(&b[4],  "NVME2STIMUS-SN-0001", 20);          // SN (20B) -> 4..23
-        memcpy(&b[24], "onetest_nvm refdev P0 (self-test)      ", 40);   // MN (40B) -> 24..63 (checked against kernel nvme_id_ctrl)
+        memcpy(&b[24], "nvme refdev P0 (self-test)      ", 40);   // MN (40B) -> 24..63 (checked against kernel nvme_id_ctrl)
         memcpy(&b[64], "P0.1    ", 8);                      // FR (8B) -> 64..71
         b[0x200] = 0x66;                                    // SQES = 2^6 = 64B
         b[0x201] = 0x44;                                    // CQES = 2^4 = 16B

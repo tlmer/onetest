@@ -1,5 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/* irq_chain.c -- interrupt per-bit dispatch chain (implementation; see .h) */
+
+
 #include "irq_chain.h"
 #include <string.h>
 
@@ -9,7 +9,6 @@ static eth_irq_fn g_fn[ETH_IRQ_SLOTS];
 static void      *g_ctx[ETH_IRQ_SLOTS];
 static unsigned   g_hits[ETH_IRQ_SLOTS];
 
-/* bit mask -> bit number (the SATA line hit this: a plain &31 treats mask 2 as bit number 2 => registered in the wrong slot) */
 static int bit_pos(u32 mask)
 {
     u32 i;

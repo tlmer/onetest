@@ -1,7 +1,7 @@
 #!/bin/sh
 #============================================================================
-# run.sh -- nvme_host P0 | L-A prototype bench one-shot (compile + green + red + final lines)
-#   usage:    sh run.sh          (from the nvme_host/ directory)
+# run.sh -- nvme P0 | L-A prototype bench one-shot (compile + green + red + final lines)
+#   usage:    sh run.sh          (from the nvme/ directory)
 #   requires: SystemC 2.3.4 @ /opt/tools/systemc2.34 (already on this machine)
 #   criteria: L-A1..L-A11 (see tb_nvme_l0.cc); green must be all green AND red must have FAILs
 #             (positive/negative control, paired)

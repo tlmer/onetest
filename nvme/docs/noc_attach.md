@@ -21,7 +21,7 @@
 | Form | Applies to | Candidates | Family precedent |
 |---|---|---|---|
 | **A. the NoC is RTL** (chip RTL runs directly in the simulator) | most common | (1) **DPI / hwfifo** (xsim / VCS) (2) **Verilator rtl-bridges** (5.035 on this machine [OK]) (3) **libremote-port** | `nic400_cosim_dbi/`, `nic400_axi9to1emu/` (NIC-400 **cosim variant RTL**, with `Axi.v`/`Axi4PC_*` channel parts) |
-| **B. the NoC has a TLM model** | provided by the customer platform | connect sockets directly ([!] first confirm the socket type: standard TLM / AMBA-PV / vendor-private -- private needs an adapter layer) | for AMBA-PV usage see the family's ACE-bridge notes |
+| **B. the NoC has a TLM model** | provided by the customer platform | connect sockets directly ([!] first confirm the socket type: standard TLM / AMBA-PV / vendor-private -- private needs an adapter layer) | family usage of a vendor-private (AMBA-PV) socket set requires an adapter layer |
 | **C. vendor platform** (VCS Native TLM / VDK ...) | customer platform | follow the platform wiring rules | `rdma400/rtl2tlm` (VDK precedent) |
 
 ## 3. What the customer must provide -- [*] downgraded to "configurable" (no need to answer first)

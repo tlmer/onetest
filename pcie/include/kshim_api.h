@@ -52,8 +52,8 @@ typedef void (*k_xfer_fn)(void *ctx, bool is_write, uint64_t addr,
                           unsigned char *buf, unsigned len, uint32_t *delay_ns);
 void k_tlm_bind_xfer(k_xfer_fn fn, void *ctx);
 
-#define readl(a)        k_transport32((u64)(a))
-#define writel(v, a)    k_transport32_wr((u64)(a), (u32)(v))
+#define readl(a)        k_be->rd32((u64)(a))
+#define writel(v, a)    k_be->wr32((u64)(a), (u32)(v))
 
 struct k_completion {
     void         *_impl;   

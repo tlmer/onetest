@@ -1,5 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/* tb_fsmoke.c -- UFS proxy model smoke (public ABI only) */
+
+
 #include "../include/ufs_ioctl_ref.h"
 #include <stdio.h>
 #include <string.h>

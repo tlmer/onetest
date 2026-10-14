@@ -1,7 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * eth_ioctl_ref.h -- Ethernet line control-plane ABI (customer contract; same style as eMMC/USB/SATA)
- */
+
+
 #ifndef ETH_IOCTL_REF_H
 #define ETH_IOCTL_REF_H
 
@@ -16,21 +14,21 @@ typedef int32_t  __s32;
 #define ETH_IOC_MAGIC  'E'
 
 struct eth_info {
-    __u32   snpsver;     /* 0x110[7:0](0x42 = ether_qos 4.21a;0x20+DEVID = xlgmac) */
-    __u32   devid;       /* 0x110[15:8] */
-    __u32   mtl_base;    /* block offset (differs per vendor -- read out, not a hard-coded macro) */
+    __u32   snpsver;     
+    __u32   devid;       
+    __u32   mtl_base;    
     __u32   dma_base;
-    __u32   caps;        /* capability bits (MDIO / MAC split / EDMA) */
+    __u32   caps;        
     __u32   running;
     __u8    mac[6];
     __u32   reserved[4];
 };
 
 struct eth_frame {
-    __u32   len;         /* [in/out] */
+    __u32   len;         
     __u8    data[1600];
     __s32   error;
-    __u32   status;      /* snapshot of the latest channel status */
+    __u32   status;      
     __u32   padding[3];
 };
 
@@ -40,4 +38,4 @@ struct eth_frame {
 #define ETH_IOC_GET_STATE _IOR(ETH_IOC_MAGIC, 4, __u32)
 #define ETH_IOC_SET_MAP   _IOW(ETH_IOC_MAGIC, 5, __u64[2])
 
-#endif /* ETH_IOCTL_REF_H */
+#endif 

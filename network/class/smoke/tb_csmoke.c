@@ -1,14 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * tb_csmoke.c -- network class smoke bench (class layer <-> ethernet IP model)
- *
- * Green: build the chain (IP model + netdev class + link), push one frame
- * class -> IP -> loopback -> IP -> class -> delivery hook, and check it
- * byte-by-byte; then check the NAPI budget rule on the same real chain.
- * Red: tamper one byte on the delivery path -- the byte-exact check must catch it.
- *
- * Verdict lines: SMOKE_GREEN_PASS / SMOKE_RED_PASS (only these count).
- */
+
+
 #include "../netdev.h"
 #include "../netdev_link.h"
 #include "../../ethernet/include/eth_ioctl_ref.h"
@@ -34,7 +25,7 @@ static int deliver(void *ctx, u32 q, const u8 *frame, u32 len)
 {
     (void)ctx; (void)q;
     memcpy(g_last, frame, len);
-    if (g_red) g_last[9] ^= 0xFF;                 /* tamper on the delivery path */
+    if (g_red) g_last[9] ^= 0xFF;                 
     g_last_len = len;
     g_deliv++;
     return 0;
@@ -77,7 +68,7 @@ int main(int argc, char **argv)
           "S-6 service: one frame delivered (poll=%u)", g_deliv);
     for (i = 0; i < 128; i++) if (g_last[i] != g[i]) mism++;
     if (red) {
-        /* red case: the injection point sits on the delivery path (deliver() flips one byte) */
+        
         CHECK(mism != 0, "S-7 RED tamper on the delivery path caught by the byte compare (mismatch=%u)", mism);
     } else {
         CHECK(g_deliv == 1 && g_last_len == 128 && mism == 0,

@@ -1,14 +1,10 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * irq_chain.c -- interrupt per-bit dispatch chain (implementation; see irq_chain.h)
- * * same as reference's `irq_chain.c`: a slot table indexed by bit; unregistered bits are **not handled** (neither silently swallowed nor mis-dispatched).
- */
+
+
 #include "irq_chain.h"
 #include <string.h>
 
 #define SATA_IRQ_SLOTS 32u
 
-/* bit mask -> bit number (the mask must be a power of two; otherwise it is treated as invalid) */
 static int bit_pos(u32 mask)
 {
     u32 i;
@@ -26,7 +22,7 @@ static unsigned    g_hits[SATA_IRQ_SLOTS];
 
 void sata_irq_bind(u32 bit, sata_irq_fn fn, void *ctx)
 {
-    int i = bit_pos(bit);            /* * mask -> bit number (NOT a plain &31) */
+    int i = bit_pos(bit);            
     if (i < 0)
         return;
     g_fn[i]  = fn;
@@ -50,7 +46,7 @@ int sata_irq_dispatch(u32 pxis)
         if (!(pxis & bit))
             continue;
         if (!g_fn[b])
-            continue;                       /* * unregistered bit: not handled (criteria must prove it) */
+            continue;                       
         g_hits[b]++;
         g_fn[b](pxis, g_ctx[b]);
         hit++;

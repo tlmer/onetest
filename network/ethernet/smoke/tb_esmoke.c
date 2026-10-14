@@ -1,5 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/* tb_esmoke.c -- Ethernet proxy model smoke (public ABI only) */
+
+
 #include "../include/eth_ioctl_ref.h"
 #include <stdio.h>
 #include <string.h>

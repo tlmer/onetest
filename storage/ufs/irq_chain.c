@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+
 #include "irq_chain.h"
 #include <string.h>
 #define UFS_IRQ_SLOTS 32u

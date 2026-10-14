@@ -1,4 +1,4 @@
-# nvme_host -- NVMe task-level stimulus over AXI4 (SystemC)
+# nvme -- NVMe task-level stimulus over AXI4 (SystemC)
 
 A **task-level stimulus** SystemC model for NVMe device verification: it drives the NVMe controller
 under test directly with "host behavior", **with no PCIe and no OS/QEMU**, making the stimulus real and
@@ -169,5 +169,22 @@ reported as success) => **16 status-code criteria fail en masse** -- proof that 
 
 - Data width **512 bits/beat** (provisional tier), burst **INCR**, **never crosses 4KB** (master BFM auto-splits, bus side re-checks)
 - The reference slave (`model/nvme_dev.h`) is **for self-test**: it only provides a peer so the task model can run; it is **not** a spec for the DUT
-- Not done yet (open account): **L-C** (randomization / multi-queue concurrency / regression) | command coverage completion (Write Zeroes/Compare/DSM | NS management |
-  Format/Sanitize | FW download | Abort/AER | SGL | CMB/PMR) | interrupt level/edge scope (currently counted only) | bandwidth/QoS (not modeled)
+- **L-C is done**: `tb/tb_nvme_lc.cc` (seeded sweep) + `run.sh --red`; the interrupt is checked as a **level**
+  (`tb_nvme_lc.cc:113-127`: idle LOW / rises on an unconsumed completion / falls when drained) -- not "counted only"
+- Not done yet (open account): command coverage completion (Write Zeroes/Compare/DSM | NS management |
+  Format/Sanitize | FW download | Abort/AER | SGL | CMB/PMR) | bandwidth/QoS (not modeled)
+
+## Scope and the interface contract (as delivered)
+
+- **Host side only, task level.**  This line drives a standard NVMe DUT at the AXI4 burst boundary; it is the
+  "Linux proxy" task model (admin/IO queues, PRP transfer, completion phase) -- not a register-level controller proxy.
+- **No IP-vendor ledger in this line, on purpose**: the NVMe *host* driver is generic (there is no DTS
+  `compatible` key for it).  The class-level ledger carries the NVMe row as a PCI class key
+  (`0x010802`, "(generic)", status todo).
+- **Interface parameters as shipped** (customer-editable in `cfg/noc.cfg`): **AxID = 4**, **outstanding = 4**,
+  **data width = 512 bit (64 B/beat)**.  Note this differs from the pcie line's contract (ID=4 / outstanding=8 /
+  128 bit); both are configuration inputs, not hard-wired -- see `cfg/noc.cfg` `[axi]`.
+- **Control face** = the task API (`model/nvme_task.h`: reset_enable / create_io / build_* / submit_io /
+  poll_cpl / mem_read / mem_write), not an ioctl ABI.
+- Data width **512 bits/beat** (provisional tier), burst **INCR**, **never crosses 4KB** (master BFM auto-splits, bus side re-checks)
+- The reference slave (`model/nvme_dev.h`) is **for self-test**: it only provides a peer so the task model can run; it is **not** a spec for the DUT
