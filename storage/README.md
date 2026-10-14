@@ -6,12 +6,37 @@ everything Linux does above it for that IP.  It is organised as
 table that maps the name Linux uses for an IP (its DTS `compatible`, or a PCI
 class code) to the model that drives it.
 
-| Path | Subclass | IP vendor | IP model | Reference driver (kernel) |
+## Supported vendor IP models
+
+The ledger ([`hal/hal_table.c`](hal/hal_table.c)) lists, for every storage IP we
+know, the key Linux uses to bind its driver -- read out of the kernel with its
+`file:line`.  "built" = the model ships in this repo; "to-do" = the IP vendor is
+identified and the model can be added.  Only IP vendors are listed (a chip
+maker's controller is never licensed out), and only **host-side working modes**
+(onetest is a Linux proxy).
+
+| Subclass | IP vendor | IP model | Linux key (DTS `compatible`) | Status |
 |---|---|---|---|---|
-| [`mmc/`](mmc/)   | mmc  | Synopsys | DW MSHC (eMMC host) | `drivers/mmc/host/dw_mmc*` |
-| [`ahci/`](ahci/) | ahci | Synopsys / CEVA | DWC AHCI / CEVA AHCI 1v84 | `drivers/ata/ahci_dwc.c` / `ahci_ceva.c` |
-| [`ufs/`](ufs/)   | ufs  | Synopsys / Cadence | DWC UFS G210 / Cadence UFS | `drivers/ufs/host/ufshcd-dwc.c` / `cdns-pltfrm.c` |
-| [`hal/`](hal/)   | --   | -- | driver key table (name -> driver) | kernel `of_match_table` / PCI class tables |
+| mmc | **Synopsys** | DW MSHC (eMMC/SD host) | `snps,dw-mshc`, `altr,socfpga-dw-mshc`, `img,pistachio-dw-mshc` | built |
+| mmc | **Synopsys** | DW SDHCI (dwcmshc) | `snps,dwcmshc-sdhci` | to-do |
+| mmc | **Cadence** | SD4HC | `cdns,sd4hc` | to-do |
+| mmc | **Arasan** | SDHCI 8.9a | `arasan,sdhci-8.9a` | to-do |
+| mmc | **ARM** | PrimeCell MMCI (PL18x) | `arm,pl18x` | to-do |
+| ahci | **Synopsys** | DWC AHCI | `snps,dwc-ahci`, `snps,spear-ahci` | built |
+| ahci | **CEVA** | AHCI 1v84 | `ceva,ahci-1v84` | built |
+| ufs | **Synopsys** | DWC UFS G210 (20-bit / 40-bit) | `snps,g210-tc-6.00-20bit` / `-40bit` | built |
+| ufs | **Cadence** | Cadence UFS (incl. m31-16nm) | `cdns,ufshc`, `cdns,ufshc-m31-16nm` | built |
+| nvme | (PCI device) | NVMe (any vendor's NVMe controller) | PCI class code `0x010802` / mask `0xffffff` | to-do |
+
+Delivery directories:
+
+| Path | What |
+|---|---|
+| [`mmc/`](mmc/) | the built MMC model (DW MSHC) + smoke test |
+| [`ahci/`](ahci/) | the built AHCI model (DWC + CEVA behind one ops layer) + smoke test |
+| [`ufs/`](ufs/) | the built UFS model (DWC G210 + Cadence behind one ops layer) + smoke test |
+| [`hal/`](hal/) | the key table above, with each row's `file:line` |
+| [`class/`](class/) | the class layer: the unified storage ioctl (SCSI CDB / error recovery / partitions) |
 
 **What "Linux proxy" means here.**  Each model runs the sequence Linux runs:
 registers and link bring-up on the controller side, and the OS-side half above
