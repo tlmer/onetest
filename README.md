@@ -20,12 +20,12 @@ as it is complete:
 
 | Path | What | Status |
 |---|---|---|
-| [`nvme/`](nvme/) | NVMe task-level stimulus model over AXI4 (standard NVMe layout, admin/IO queues, PRP, phase bits) | available |
+| [`nvme/`](nvme/) | NVMe task-level stimulus model over AXI4 (standard NVMe layout, admin/IO queues, PRP, phase bits) + control ABI (`nvme_model_ioctl`) | available |
 | [`storage/`](storage/) | block-storage host models (mmc / ahci / ufs) + driver key table + the unified storage ioctl | available |
 | [`network/`](network/) | ethernet IP models (GMAC / XLGMAC) + driver key table + the class layer (netdev/NAPI/flow control) | available |
 | [`usb/`](usb/) | USB host model (DWC_usb3, xHCI) + driver key table + the class layer (SET_CONFIGURATION / endpoints / class drivers) | available |
 | [`pcie/`](pcie/) | PCIe root-complex host model (DWC Root Port, 460A/490A) + driver key table + AXI4 contract (ID=4/8 outstanding/128-bit), DMA-route, control-plane ABI | available |
-| `smmu/` | the remaining class | in progress |
+| [`smmu/`](smmu/) | SMMUv3 host model (SMMU-600/700, two IIDR product ids) + driver key table | available |
 
 Each delivery ships source, a self-test that builds from source, and a single
 verdict line:
