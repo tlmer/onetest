@@ -24,6 +24,9 @@ static const struct usb_hal_entry g_table[] = {
   "todo", (const struct usb_ip_ops *)0 },
 { { K_USB, "fotg210", "Faraday", "FOTG210 (USB 2.0 OTG)" },
   HAL_KEY_DT, "faraday,fotg210", "K:drivers/usb/host/fotg210-hcd.c:5673",
+  "todo", (const struct usb_ip_ops *)0 },
+{ { K_USB, "ci_hdrc", "ChipIdea", "ChipIdea HS dual-role controller (host mode here)" },
+  HAL_KEY_DT, "chipidea,usb2", "K:drivers/usb/chipidea/ci_hdrc_usb2.c:42",
   "todo", (const struct usb_ip_ops *)0 }
 };
 
