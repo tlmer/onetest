@@ -1,5 +1,5 @@
 // ============================================================================
-// tb_nvme_l0.cc -- nvme2stimus P0 | L-A prototype bench (self-test: reference slave <-> task model)
+// tb_nvme_l0.cc -- nvme_host P0 | L-A prototype bench (self-test: reference slave <-> task model)
 //   Criteria L-A1..L-A11 (list in run.sh); red/green paired:
 //     green (default): everything PASS; red (--red): the device corrupts 1 byte on write-back =>
 //     the byte-by-byte criteria must FAIL
@@ -99,7 +99,7 @@ void Tb::main_th() {
     m_task.read_block(DATA, got.data(), 4096);
     chk(get16(&got[0]) == 0x1234 && get16(&got[2]) == 0x5678, "L-A3b Identify VID/SSVID");
     chk(memcmp(&got[4], "NVME2STIMUS-SN-0001", 20) == 0, "L-A3c SN(20B) byte by byte");
-    chk(memcmp(&got[24], "nvme2stimus refdev P0 (self-test)      ", 40) == 0, "L-A3d MN(40B)@24 byte by byte");
+    chk(memcmp(&got[24], "onetest_nvm refdev P0 (self-test)      ", 40) == 0, "L-A3d MN(40B)@24 byte by byte");
     chk(memcmp(&got[64], "P0.1    ", 8) == 0, "L-A3e FR(8B) byte by byte");
     chk(got[0x200] == 0x66 && got[0x201] == 0x44 && get32(&got[0x204]) == 1, "L-A3f SQES/CQES/NN bitfields");
     chk(memcmp(got.data(), gold.data(), 4096) == 0, "L-A3g Identify data 4KB golden image byte by byte (full)");
@@ -201,7 +201,7 @@ void Tb::main_th() {
 
 int sc_main(int argc, char** argv) {
     bool red = (argc > 1 && std::string(argv[1]) == "--red");
-    printf("== nvme2stimus P0 | L-A prototype bench (%s case; AXI4 semantic layer + reference slave + task model) ==\n",
+    printf("== nvme_host P0 | L-A prototype bench (%s case; AXI4 semantic layer + reference slave + task model) ==\n",
            red ? "red" : "green");
     Tb tb("tb", red);
     sc_start();

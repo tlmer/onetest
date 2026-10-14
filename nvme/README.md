@@ -1,4 +1,4 @@
-# nvme2stimus -- NVMe task-level stimulus over AXI4 (SystemC)
+# nvme_host -- NVMe task-level stimulus over AXI4 (SystemC)
 
 A **task-level stimulus** SystemC model for NVMe device verification: it drives the NVMe controller
 under test directly with "host behavior", **with no PCIe and no OS/QEMU**, making the stimulus real and

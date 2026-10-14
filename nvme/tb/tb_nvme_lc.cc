@@ -1,5 +1,5 @@
 // ============================================================================
-// tb_nvme_lc.cc -- nvme2stimus P1 | L-C coverage-oriented sweep
+// tb_nvme_lc.cc -- nvme_host P1 | L-C coverage-oriented sweep
 //   (randomized commands + multi-queue concurrency + long run)
 //
 //   green: N randomized commands over 4 I/O queues; every transfer shadow-verified byte by byte;
@@ -102,7 +102,7 @@ void Tb::main_th() {
     uint64_t n_wr = 0, n_rd = 0, n_fl = 0, n_err = 0;
 
     wait(50, SC_NS);
-    printf("== nvme2stimus P1 | L-C sweep (seed=%u, N=%d, %s) ==\n", seed, count, red ? "RED" : "GREEN");
+    printf("== nvme_host P1 | L-C sweep (seed=%u, N=%d, %s) ==\n", seed, count, red ? "RED" : "GREEN");
 
     // -- baseline: enable + create Q I/O queues (CQ size 4 => CQ-full pressure) --
     chk(task.reset_enable(), "LC-0 baseline: CC.EN -> CSTS.RDY");

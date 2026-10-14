@@ -1,4 +1,4 @@
-# Design notes -- nvme2stimus (NVMe task-level stimulus / AXI4 boundary)
+# Design notes -- nvme_host (NVMe task-level stimulus / AXI4 boundary)
 
 ## 1. Positioning
 

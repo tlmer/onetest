@@ -1,5 +1,5 @@
 // ============================================================================
-// tb_nvme_lb.cc -- nvme2stimus P1 | L-B protocol-boundary bench (error paths)
+// tb_nvme_lb.cc -- nvme_host P1 | L-B protocol-boundary bench (error paths)
 //   Criteria LB-1..LB-16: status-code exits (INVALID_OPCODE/INVALID_FIELD/LBA_RANGE/
 //     DATA_XFER_ERROR) | queue boundary (CQ full => stall, zero loss) | timeout path (no hang
 //     + late completion not re-injected) | status-word bit-level check | count consistency
@@ -208,7 +208,7 @@ void Tb::main_th() {
 
 int sc_main(int argc, char** argv) {
     bool red = (argc > 1 && std::string(argv[1]) == "--red");
-    printf("== nvme2stimus P1 | L-B protocol-boundary bench (%s case) ==\n", red ? "red (bad-status injection)" : "green");
+    printf("== nvme_host P1 | L-B protocol-boundary bench (%s case) ==\n", red ? "red (bad-status injection)" : "green");
     Tb tb("tb", red);
     sc_start();
     return FAIL ? 1 : 0;

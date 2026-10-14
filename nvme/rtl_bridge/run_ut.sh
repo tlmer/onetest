@@ -1,6 +1,6 @@
 #!/bin/sh
 # run_ut.sh -- one-shot SV-side self-check bench for the DPI bridge (xsim; only the final line counts)
-#   Requires: Vivado xsim (xvlog/xsc/xelab/xsim; on this machine /mnt/cdrom/2025.2/Vivado [OK])
+#   Requires: Vivado xsim (xvlog/xsc/xelab/xsim; on this machine a local Vivado install [OK])
 #   Criterion: TB_AXI_DPI_BRIDGE PASS (11 chk inside the bench; the C-side rdata second check goes
 #   through the log)
 set -eu

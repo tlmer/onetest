@@ -22,11 +22,14 @@ as it is complete:
 |---|---|---|
 | [`nvme/`](nvme/) | NVMe task-level stimulus model over AXI4 (standard NVMe layout, admin/IO queues, PRP, phase bits) | available |
 | [`storage/`](storage/) | block-storage host models (mmc / ahci / ufs) + driver key table + the unified storage ioctl | available |
-| `usb/` `network/` `pcie/` `smmu/` | the remaining classes | in progress |
+| [`network/`](network/) | ethernet IP models (GMAC / XLGMAC) + driver key table + the class layer (netdev/NAPI/flow control) | available |
+| `usb/` `pcie/` `smmu/` | the remaining classes | in progress |
 
 Each delivery ships source, a self-test that builds from source, and a single
 verdict line:
 
 ```sh
-cd nvme && sh run.sh          # TB_NVME_LA PASS / TB_NVME_LB PASS / TB_NVME_LC PASS
+cd nvme && sh run.sh                      # TB_NVME_LA/LB/LC PASS
+cd network/ethernet/smoke && make && ./tb_esmoke   # SMOKE_GREEN_PASS
+cd network/class/smoke && make && ./tb_csmoke      # SMOKE_GREEN_PASS
 ```
