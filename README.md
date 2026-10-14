@@ -23,7 +23,8 @@ as it is complete:
 | [`nvme/`](nvme/) | NVMe task-level stimulus model over AXI4 (standard NVMe layout, admin/IO queues, PRP, phase bits) | available |
 | [`storage/`](storage/) | block-storage host models (mmc / ahci / ufs) + driver key table + the unified storage ioctl | available |
 | [`network/`](network/) | ethernet IP models (GMAC / XLGMAC) + driver key table + the class layer (netdev/NAPI/flow control) | available |
-| `usb/` `pcie/` `smmu/` | the remaining classes | in progress |
+| [`usb/`](usb/) | USB host model (DWC_usb3, xHCI) + driver key table + the class layer (SET_CONFIGURATION / endpoints / class drivers) | available |
+| `pcie/` `smmu/` | the remaining classes | in progress |
 
 Each delivery ships source, a self-test that builds from source, and a single
 verdict line:
@@ -32,4 +33,6 @@ verdict line:
 cd nvme && sh run.sh                      # TB_NVME_LA/LB/LC PASS
 cd network/ethernet/smoke && make && ./tb_esmoke   # SMOKE_GREEN_PASS
 cd network/class/smoke && make && ./tb_csmoke      # SMOKE_GREEN_PASS
+cd usb/smoke && make && ./tb_usmoke                # SMOKE_GREEN_PASS
+cd usb/class/smoke && make && ./tb_usbcore         # SMOKE_GREEN_PASS
 ```
