@@ -13,6 +13,7 @@ typedef int32_t  __s32;
 #define STORAGE_SUBCLASS_ID_AHCI  1
 #define STORAGE_SUBCLASS_ID_UFS   2
 #define STORAGE_SUBCLASS_ID_NVME  3
+#define STORAGE_SUBCLASS_ID_SAS   4
 
 struct storage_info {
     __u64 blocks;        

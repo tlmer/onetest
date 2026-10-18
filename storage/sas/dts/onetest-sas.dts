@@ -1,0 +1,28 @@
+/*
+ * onetest-sas.dts -- customer-editable DTS template (T1).
+ *
+ * Change this file to set the IP presence, PCI IDs, PHY/queue counts, the
+ * local SAS address and the register window.  No C code changes are needed.
+ *
+ *   compatible  : model selector (HAL key for the onetest proxy)
+ *   pci-vendor/device : kernel binding key (K:hisi_sas_v3_hw.c:5073-5074)
+ *   sas-addr    : 8-byte local SAS address (big-endian, as in the kernel DTS)
+ *   phy-count   : 4 (Kernel property, K:hisi_sas_main.c:2331)
+ *   queue-count : 16 (Kernel property, K:hisi_sas_main.c:2336)
+ *   reg         : <addr-hi addr-lo size-hi size-lo>
+ *   interrupts  : MSI vector numbers used by the driver (1/2/11/16+i)
+ */
+/dts-v1/;
+
+/ {
+    sas@72700000 {
+        compatible = "onetest,sas";
+        pci-vendor = <0x19e5>;
+        pci-device = <0xa230>;
+        sas-addr = [50 01 88 20 16 d9 00 03];
+        phy-count = <4>;
+        queue-count = <16>;
+        reg = <0x0 0x72700000 0x0 0x100000>;
+        interrupts = <1 2 11 16 17 18 19>;
+    };
+};

@@ -5,6 +5,7 @@
 extern const struct storage_ip_ops storage_ops_mmc;    
 extern const struct storage_ip_ops storage_ops_ahci;   
 extern const struct storage_ip_ops storage_ops_ufs;    
+extern const struct storage_ip_ops storage_ops_sas;    
 
 #ifdef HAL_WITH_MMC
 #define OPS_MMC  (&storage_ops_mmc)
@@ -20,6 +21,11 @@ extern const struct storage_ip_ops storage_ops_ufs;
 #define OPS_UFS  (&storage_ops_ufs)
 #else
 #define OPS_UFS  ((const struct storage_ip_ops *)0)
+#endif
+#ifdef HAL_WITH_SAS
+#define OPS_SAS  (&storage_ops_sas)
+#else
+#define OPS_SAS  ((const struct storage_ip_ops *)0)
 #endif
 
 #define K_STORAGE "storage"
@@ -71,6 +77,20 @@ static const struct storage_hal_entry g_table[] = {
 { { K_STORAGE, "ufs", "Cadence", "UFS (m31-16nm)" },
   HAL_KEY_DT, "cdns,ufshc-m31-16nm",    "K:drivers/ufs/host/cdns-pltfrm.c:275",
   "built", 0, 0, OPS_UFS },
+
+{ { K_STORAGE, "sas", "Customer HBA", "hisi_sas v3 (PCI)" },
+  HAL_KEY_PCI_ID, "pci 0x19e5:0xa230",
+  "K:drivers/scsi/hisi_sas/hisi_sas_v3_hw.c:5073",
+  "built", 0x19e5a230u, 0xffffffffu, OPS_SAS },
+{ { K_STORAGE, "sas", "Customer HBA", "hisi_sas v1 (platform)" },
+  HAL_KEY_DT, "hisilicon,hip05-sas-v1", "K:drivers/scsi/hisi_sas/hisi_sas_v1_hw.c:1799",
+  "todo", 0, 0, 0 },
+{ { K_STORAGE, "sas", "Customer HBA", "hisi_sas v2 (platform)" },
+  HAL_KEY_DT, "hisilicon,hip06-sas-v2", "K:drivers/scsi/hisi_sas/hisi_sas_v2_hw.c:3628",
+  "todo", 0, 0, 0 },
+{ { K_STORAGE, "sas", "Customer HBA", "hisi_sas v2 (platform)" },
+  HAL_KEY_DT, "hisilicon,hip07-sas-v2", "K:drivers/scsi/hisi_sas/hisi_sas_v2_hw.c:3629",
+  "todo", 0, 0, 0 },
 
 { { K_STORAGE, "nvme", "(generic)", "NVMe (PCIe)" },
   HAL_KEY_PCI, "class 0x010802 / mask 0xffffff",

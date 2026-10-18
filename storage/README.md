@@ -27,6 +27,11 @@ maker's controller is never licensed out), and only **host-side working modes**
 | ufs | **Synopsys** | DWC UFS G210 (20-bit / 40-bit) | `snps,g210-tc-6.00-20bit` / `-40bit` | built |
 | ufs | **Cadence** | Cadence UFS (incl. m31-16nm) | `cdns,ufshc`, `cdns,ufshc-m31-16nm` | built |
 | nvme | (PCI device) | NVMe (any vendor's NVMe controller) | PCI class code `0x010802` / mask `0xffffff` | to-do |
+| sas | (customer HBA) | hisi_sas v3 compatible | PCI vendor:device `0x19e5:0xa230` | built |
+
+> The SAS row is a user-directed exception: the reference driver is the kernel
+> `hisi_sas` driver, and the DUT is the customer's own HBA.  It does not add a
+> chip vendor's IP to the ledger.
 
 Delivery directories:
 
@@ -35,6 +40,7 @@ Delivery directories:
 | [`mmc/`](mmc/) | the built MMC model (DW MSHC) + smoke test |
 | [`ahci/`](ahci/) | the built AHCI model (DWC + CEVA behind one ops layer) + smoke test |
 | [`ufs/`](ufs/) | the built UFS model (DWC G210 + Cadence behind one ops layer) + smoke test |
+| [`sas/`](sas/) | the built SAS Linux-proxy model (hisi_sas v3) + AXI4 bridge + DTS template + smoke/example |
 | [`hal/`](hal/) | the key table above, with each row's `file:line` |
 | [`class/`](class/) | the class layer: the unified storage ioctl (SCSI CDB / error recovery / partitions) |
 
@@ -61,6 +67,7 @@ library and prints a single verdict line:
 ```sh
 cd ufs/smoke && make && ./tb_fsmoke     # SMOKE_GREEN_PASS
 ./tb_fsmoke --red                       # SMOKE_RED_PASS
+cd sas/smoke && make && ./tb_ssmoke     # GET_INFO / READ(10) pass
 ```
 
 The `--red` run injects a fault and asserts that the checks catch it, so a
@@ -69,7 +76,8 @@ green run means the checks have teeth.
 ## Driver key table
 
 `hal/hal.h` and `hal/hal_table.c` list, for every storage IP we know, the key
-Linux uses to bind its driver (DTS `compatible`, or PCI class code for NVMe)
+Linux uses to bind its driver (DTS `compatible`, PCI class code for NVMe,
+or exact PCI vendor:device for hisi_sas v3)
 together with the kernel source line it was read from.  Ask for an IP by name
 and you get either the model that drives it or an explicit "not implemented"
 -- never a silent fallback.

@@ -1,5 +1,9 @@
 # sata/ -- SATA (AHCI) host-controller proxy model
 
+> **Userspace reference (unified convention, 2026-10-16)**: the block/SCSI face is
+> cross-checked against **util-linux** semantics (partitioning, R6); ATA-specific user
+> tools (**hdparm** / **sdparm**) are not yet consulted (tracked -- NCQ deep water line).
+
 A model of the Linux SATA host stack (AHCI 1.3.0 + libata semantics) that runs
 without the Linux OS.  It drives a DWC ahsata 4.10a controller through the same
 split the kernel itself draws: the **standard AHCI register window** (HBA

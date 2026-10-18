@@ -42,7 +42,14 @@ void c_ufs_wdata(unsigned long long h, int beat, unsigned char *data, unsigned c
     pthread_mutex_lock(&g_mtx);
     for (i = 0; i < UFS_DPI_MAXENT; i++)
         if (g_ent[i].in_use && g_ent[i].h == h) { e = &g_ent[i]; break; }
-    if (e) { memcpy(data, e->data, UFS_DPI_BYTES); memcpy(strb, e->strb, UFS_DPI_BYTES); }
+    if (e) {
+        unsigned j;   
+
+        memcpy(data, e->data, UFS_DPI_BYTES);
+        memset(strb, 0, UFS_DPI_BYTES / 8u);
+        for (j = 0; j < UFS_DPI_BYTES; j++)
+            if (e->strb[j]) strb[j >> 3] |= (unsigned char)(1u << (j & 7u));
+    }
     else   { memset(data, 0, UFS_DPI_BYTES); memset(strb, 0, UFS_DPI_BYTES); }
     pthread_mutex_unlock(&g_mtx);
 }
@@ -88,7 +95,7 @@ int c_ufs_slv_wbeat(unsigned long long addr, int size, int beat, int is_last,
     if (n > UFS_DPI_BYTES - lane) n = UFS_DPI_BYTES - lane;
     for (i = 0; i < n; i++) {
         void *host = pool_translate(a + i);
-        if (!strb[i]) continue;
+        if (!(((strb[(lane + i) >> 3] >> ((lane + i) & 7u)) & 1u))) continue;
         if (!host) { g_slv_miss++; return 3; }           
         *(unsigned char *)host = data[i];
     }

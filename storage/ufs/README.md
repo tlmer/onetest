@@ -1,5 +1,10 @@
 # ufs/ -- UFS host-controller proxy model
 
+> **Userspace reference (unified convention, 2026-10-16)**: LU/descriptor configuration
+> semantics follow the kernel driver (`K:ufshcd.c`, R6e); **ufs-utils** (the existing
+> userspace tool for UFS descriptor access) is recorded as the reference for any future
+> descriptor-layout assertions.
+
 A model of the Linux UFS stack (UFSHCI) that runs without the Linux OS.  It
 follows the kernel UFSHCI exactly: standard registers 0x00-0x9F, vendor white
 space, and the UFSHCI completion rule (the controller clears the UTRLDBR bit,

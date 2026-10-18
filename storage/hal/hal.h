@@ -31,8 +31,10 @@ struct storage_ip_ops {
     long (*ioctl)(unsigned int cmd, void *arg, unsigned long len);
 };
 
-#define HAL_KEY_DT   "dt-compatible"
-#define HAL_KEY_PCI  "pci-class"
+#define HAL_KEY_DT      "dt-compatible"
+#define HAL_KEY_PCI     "pci-class"
+
+#define HAL_KEY_PCI_ID  "pci-id"
 
 struct storage_hal_entry {
     struct storage_ip_key key;
@@ -48,10 +50,15 @@ const struct storage_hal_entry *storage_hal_lookup(const char *compat);
 
 const struct storage_hal_entry *storage_hal_lookup_pci(u32 class_code);
 
+const struct storage_hal_entry *storage_hal_lookup_pci_id(u32 vendor, u32 device);
+
 int storage_hal_bind(const char *compat, const struct storage_ip_ops **ops);
 
 int storage_hal_bind_pci(u32 class_code, const struct storage_ip_ops **ops,
                          const struct storage_hal_entry **entry);
+
+int storage_hal_bind_pci_id(u32 vendor, u32 device, const struct storage_ip_ops **ops,
+                            const struct storage_hal_entry **entry);
 
 const struct storage_hal_entry *storage_hal_table(unsigned *count);
 
