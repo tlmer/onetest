@@ -233,14 +233,20 @@ struct sas_status_buffer {
     u8 iu[1024];
 } __attribute__((aligned(16)));
 
-_Static_assert(sizeof(struct sas_cmd_hdr) == 64, "cmd_hdr must be 64 bytes");
-_Static_assert(sizeof(struct sas_cqe) == 16, "CQE must be 16 bytes");
-_Static_assert(sizeof(struct sas_sge) == 24, "SGE must be 24 bytes");
-_Static_assert(sizeof(struct sas_itct) == 128, "ITCT must be 128 bytes");
-_Static_assert(sizeof(struct sas_status_buffer) == 1040, "status buffer must be 1040");
-_Static_assert(offsetof(struct sas_status_buffer, iu) == 16, "IU at +16");
-_Static_assert(sizeof(struct sas_cmd_hdr) + offsetof(struct sas_status_buffer, iu) == 80,
-               "(sanity)");
+#if defined(__cplusplus)
+#define SAS_STATIC_ASSERT(c, m) static_assert((c), m)
+#else
+#define SAS_STATIC_ASSERT(c, m) _Static_assert((c), m)
+#endif
+
+SAS_STATIC_ASSERT(sizeof(struct sas_cmd_hdr) == 64, "cmd_hdr must be 64 bytes");
+SAS_STATIC_ASSERT(sizeof(struct sas_cqe) == 16, "CQE must be 16 bytes");
+SAS_STATIC_ASSERT(sizeof(struct sas_sge) == 24, "SGE must be 24 bytes");
+SAS_STATIC_ASSERT(sizeof(struct sas_itct) == 128, "ITCT must be 128 bytes");
+SAS_STATIC_ASSERT(sizeof(struct sas_status_buffer) == 1040, "status buffer must be 1040");
+SAS_STATIC_ASSERT(offsetof(struct sas_status_buffer, iu) == 16, "IU at +16");
+SAS_STATIC_ASSERT(sizeof(struct sas_cmd_hdr) + offsetof(struct sas_status_buffer, iu) == 80,
+                  "(sanity)");
 
 #define SAS_CMD_HDR_ABORT_FLAG_SHIFT    0
 #define SAS_CMD_HDR_ABORT_DEV_TYPE_SHIFT 2

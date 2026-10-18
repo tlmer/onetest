@@ -90,6 +90,12 @@ ioctl(fd, SAS_TC_RUN, &run);
 ioctl(fd, SAS_TC_COVERAGE_TEXT, text);
 ```
 
+The registry has 16 cases: the U2 vertical slice (init, inquiry, capacity,
+read/write, TMF, ITCT clear, SMP, W1C, sense, soft reset) plus the U3/U4
+coverage: `multi_sge` (3-entry SGL), `multi_queue` (round-robin over every
+DQ/CQ), `err_record` (transport error record), `invalid_opcode` (ILLEGAL
+REQUEST) and `abort_stat` (TMF abort status in CQE dw0[15:13]).
+
 The same registry is available in the standalone console:
 
 ```
