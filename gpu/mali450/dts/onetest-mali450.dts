@@ -1,0 +1,18 @@
+/dts-v1/;
+
+/ {
+	model = "onetest-mali450-template";
+	compatible = "onetest,test-bench";
+
+	gpu@f0000000 {
+		compatible = "arm,mali-450", "arm,mali-400";
+		reg = <0xf0000000 0x10000>;
+		interrupts = <0 0 4>;			
+		onetest,ip-mask = <0xffc0e07f>;		
+		onetest,irq-vector = <0x01000000>;
+		
+
+		onetest,mem-size = <0x10000000>;	
+		onetest,bo-limit = <0x04000000>;	
+	};
+};

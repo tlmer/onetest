@@ -26,6 +26,7 @@ as it is complete:
 | [`usb/`](usb/) | USB host model (DWC_usb3, xHCI) + driver key table + the class layer (SET_CONFIGURATION / endpoints / class drivers) | available |
 | [`pcie/`](pcie/) | PCIe root-complex host model (DWC Root Port, 460A/490A) + driver key table + AXI4 contract (ID=4/8 outstanding/128-bit), DMA-route, control-plane ABI | available |
 | [`smmu/`](smmu/) | SMMUv3 host model (SMMU-600/700, two IIDR product ids) + driver key table | available |
+| [`gpu/mali450/`](gpu/mali450/) | ARM Mali Utgard (Mali-450/400, `lima`) Linux-proxy host model: bring-up/MMU/page tables, GEM + VAs, GP/PP jobs, fences, fault/recovery; control ABI + testcase ABI + DTS template + NoC bridge | available |
 
 Each delivery ships source, a self-test that builds from source, and a single
 verdict line:
@@ -38,4 +39,6 @@ cd usb/smoke && make && ./tb_usmoke                # SMOKE_GREEN_PASS
 cd usb/class/smoke && make && ./tb_usbcore         # SMOKE_GREEN_PASS
 cd pcie/smoke && make && ./tb_pcie_smoke           # SMOKE_GREEN_PASS
 cd pcie/example && make && ./pcie_example          # end-to-end demo
+cd gpu/mali450/smoke && make && ./tb_gpu_smoke     # SMOKE_GREEN_PASS
+cd gpu/mali450/example && make && ./gpu_example    # end-to-end demo
 ```

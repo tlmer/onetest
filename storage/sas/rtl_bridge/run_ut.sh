@@ -7,8 +7,8 @@ cd "$(dirname "$0")"
 mkdir -p evidence
 rm -rf csrc simv_bridge simv_bridge.daidir AN.DB ucli.key
 
-VCS_HOME=/mnt/hdd1/vcs2025.06-SP1
-GCCDIR=/mnt/hdd1/vdk2024.03/SLS/gnu/gcc-9.5-64/bin
+VCS_HOME=${VCS_HOME:?set VCS_HOME to your VCS installation}
+GCCDIR=${GCCDIR:-$(dirname "$(command -v gcc)")}
 export VCS_HOME
 PATH="$GCCDIR:$VCS_HOME/bin:$PATH"
 export PATH
