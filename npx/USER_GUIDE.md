@@ -37,9 +37,11 @@ no OS, no simulator for the standalone build.
 |---|---|
 | `npx_model.h` | model lifecycle, 7-command ioctl entry, mmap, IRQ, rproc boot, white-box register access |
 | `npx_ioctl_ref.h` | the 7-command UAPI contract (magic `'N'`), byte-for-byte field layout |
+| `npx_tc_ref.h` | the **testcase control ABI** (magic `'T'`): count/info/run/coverage |
+| `npx_dts.h` | `npx_model_load_dts(path, &cfg)` -- board DTS runtime loader |
 | `npx_regs.h` | register offsets / decode macros and the DTS `compatible` strings |
 | `npx_internal.h` | shared helpers used by the shipped benches (memory windows, core id) |
-| `npx_tc.h` | standard testcase registry API |
+| `npx_tc.h` | standard testcase registry API (run/coverage/count/info/ioctl) |
 | `npx_trace.h` | `MODEL_TRACE` printing helper |
 | `kshim.h` | the tiny kernel-primitive shim the library was built against |
 
@@ -53,9 +55,13 @@ The headers are the interface; the model sources are not part of this package.
 cd example && make run        # prints NPX_EXAMPLE PASS
 cd ../smoke && make && ./tb_npx_smoke          # NPX_SMOKE PASS=47 FAIL=0
 make RED=1 && ./tb_npx_smoke_red               # negative control: 43/4
+make && ./tb_npx_tc_ioctl                      # testcase channel: 17/0
+./tb_npx_tc_ioctl_red                          # negative control: 16/1
+make && ./tb_npx_dts                           # DTS loader: 26/0
+./tb_npx_dts_red                               # negative control: 25/1
 ```
 
-Both programs link `lib/libnpx_model.a` and need nothing else besides pthread.
+All programs link `lib/libnpx_model.a` and need nothing else besides pthread.
 
 ---
 
@@ -99,6 +105,22 @@ DPI bridge.
 Unknown command => `-ENOTTY`; missing argument/invalid values => `-EINVAL`.
 Nothing is silently ignored.
 
+### Testcase control channel (magic `'T'`)
+
+Independent of the DUT UAPI (its own magic), for selecting and running the
+model's standard testcases from UVM or any bench:
+
+| Command | Structure | Notes |
+|---|---|---|
+| `NPX_TC_GET_COUNT` | `uint32_t` | number of registered testcases |
+| `NPX_TC_GET_INFO` | `struct npx_tc_info {id, name[24]}` | fill `id` in; name comes back |
+| `NPX_TC_RUN` | `struct npx_tc_run {id, iterations, pad0, pad1; ran, passed, failed, last_rc}` | `id = NPX_TC_ID_ALL` runs every case; `iterations=0` => 1 |
+| `NPX_TC_COVERAGE` | `struct npx_tc_cov {total, tested, passed, failed, not_impl}` | also prints the tested / not-tested report |
+
+`pad0`/`pad1` must be 0; an out-of-range id or a NULL argument => `-EINVAL`;
+an unknown command => `-ENOTTY`.  The registry is the same one the console
+exposes as `test <name|all> [iterations]`.
+
 ---
 
 ## 6. Board configuration and DTS
@@ -109,9 +131,22 @@ Every value is an **input**: override the fields of `struct npx_cfg` before
 `npx_model_init()`.
 
 `dts/onetest-npx.dts` is the matching device-tree template, including the
-`compatible` keys and the firmware names.  A runtime DTS parser is **not**
-part of this package yet (see Limitations); the template documents the
-board facts and the fields the customer must feed into `struct npx_cfg`.
+`compatible` keys and the firmware names.
+
+The template is also a **runtime input**:
+
+```c
+struct npx_cfg cfg;
+npx_cfg_default(&cfg);                       /* defaults, then the file wins */
+if (npx_model_load_dts("onetest-npx.dts", &cfg) != 0)
+    /* -ENOENT / -ENODEV / -EINVAL -- never a silent fallback */;
+npx_model_init(&cfg);
+```
+
+The loader understands `compatible`, `reg`, `firmware-name`, `snps,arcnet-id`,
+`snps,dma-bits` and the optional `onetest,shmem-size` (the model's shared
+window; without it the window size already in `cfg` is kept).  Fields the
+file does not mention keep their `npx_cfg_default()` value.
 
 ---
 
@@ -144,6 +179,25 @@ interrupt output.  The bridge contract is 128-bit data / 64-bit address;
 if the DUT host port is narrower (the NPX6 ARCSYNC port is 64-bit data /
 40-bit address), place a width adapter between `m_*` and the DUT, or
 instantiate the bridge with `DW=64` and adjust the C link contract.
+
+### SystemC TLM socket leg (source tree)
+
+The same C model sources also build on the SystemC TLM base layer
+(`common/kshim_tlm`):
+
+* `npx_tlm_host` -- initiator socket: every register read/write transaction.
+* `npx_tlm_slave` -- target socket: DUT posted reads/writes into host memory;
+  an address with no owner => `TLM_GENERIC_ERROR` + counted miss.
+* `npx_tlm_irq` -- active-high DUT -> model interrupt (rising edge calls
+  `npx_model_irq()`, value-change semantics).
+
+```sh
+cd model/tlm && make        # NPX_TLM PASS=12 FAIL=0
+make red                    # negative control: 11/1
+```
+
+This leg lives in the source tree (`model/tlm/`), not in this package --
+the same convention as the other onetest lines.
 
 ---
 
@@ -184,8 +238,10 @@ itself.
 
 * Firmware images are customer assets and are not included.  The loader
   accepts **ELF32 little-endian** only; ELF64 is rejected explicitly.
-* The DTS template is documentation + input; there is no runtime parser in
-  this package (feed `struct npx_cfg` directly).
+* The DTS loader is a small subset parser (nodes + the properties listed in
+  section 6); it is not a general dtc.  The SystemC TLM socket leg lives in
+  the source tree (`model/tlm/`), not in this package (same convention as the
+  other onetest lines).
 * The notify window protocol is defined by the user-space runtime; the model
   only guarantees the window maps and addresses are correct.
 * DMA addresses are a linear device window; there is no IOMMU/SMMU attach in

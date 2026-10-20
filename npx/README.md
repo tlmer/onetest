@@ -12,13 +12,13 @@ The model plays the **host**; the NPU cores and cluster network are the DUT.
 
 | Path | What it is |
 |---|---|
-| `include/` | public API + the 7-command UAPI contract + register map + shim header |
+| `include/` | public API, the 7-command UAPI contract, the testcase ABI (magic `'T'`), the DTS loader, register map, shim header |
 | `lib/libnpx_model.a` | the model (static library built from source) |
-| `smoke/` | standalone criterion bench (green + `RED` negative control) |
+| `smoke/` | standalone criterion benches (model / testcase channel / DTS; green + `RED` negative controls) |
 | `example/` | minimal end-to-end example (links the library only) |
-| `dts/onetest-npx.dts` | board DTS template (customer-editable input) |
+| `dts/onetest-npx.dts` | board DTS template (customer-editable input; loaded at runtime by `npx_model_load_dts`) |
 | `rtl_bridge/` | AXI4/DPI bridge for RTL integration (SV block + `.veo` + C link + benches) |
-| `USER_GUIDE.md` | integration guide (API, UAPI, backend contract, limitations) |
+| `USER_GUIDE.md` | integration guide (API, UAPI, testcase ABI, DTS loader, backend contract, limitations) |
 
 ## Verified numbers (source rebuild)
 
@@ -29,8 +29,12 @@ The model plays the **host**; the NPU cores and cluster network are the DUT.
 | HAL key table | `19/0`, red `17/2` |
 | AXI/DPI C link loopback | `15/0`, red `11/4` |
 | standard testcases (`test all`) | 6/6 registered groups, coverage report included |
+| testcase control channel (magic `'T'`) | `17/0`, red `16/1` |
+| DTS loader (board A / board B / shipped template / negatives) | `26/0`, red `25/1` |
 | bridge self-test (VCS, `rtl_bridge/run_ut.sh`) | 19 criteria PASS |
 | DUT smoke against real NPU RTL (VCS) | S-1..S-6b: 7/0 (BLD_CFG 0x02100202, ARCSYNC v2, EID raise/ack) |
+| model <-> real NPU RTL joint sim (VCS) | `TB_NPX_JOINT PASS` (register path + EID -> model IRQ) |
+| SystemC TLM socket leg (source tree, `model/tlm/`) | `NPX_TLM 12/0`, red `11/1` |
 
 ## Model API
 
