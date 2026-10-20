@@ -6,6 +6,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <time.h>
+#include <unistd.h>
 
 #define SAS_DPI_SLOTS   8u          
 #define SAS_DPI_BYTES   16u         
@@ -23,6 +24,7 @@ struct link_ent {
 };
 static struct link_ent g_ent[SAS_DPI_MAXENT];
 static unsigned long long g_next_h = 1;
+static unsigned g_id_busy;      
 static unsigned g_inflight, g_submitted, g_completed, g_busy_retry,
                 g_timeouts, g_err_resp, g_slv_hits, g_slv_miss;
 
@@ -204,10 +206,19 @@ long long sas_dpi_post(unsigned long long addr, int size, int is_write,
     for (i = 0; i < SAS_DPI_MAXENT; i++) if (!g_ent[i].in_use) { e = &g_ent[i]; break; }
     if (!e) { g_busy_retry++; pthread_mutex_unlock(&g_mtx); return -1; }
     memset(e, 0, sizeof(*e));
-    h = g_next_h++;
+    
+
+    {
+        unsigned id;
+        for (id = 0; id < SAS_DPI_SLOTS; id++)
+            if (!(g_id_busy & (1u << id))) break;
+        if (id >= SAS_DPI_SLOTS) { g_busy_retry++; pthread_mutex_unlock(&g_mtx); return -1; }
+        g_id_busy |= 1u << id;
+        h = ((g_next_h++) << 4) | id;
+        e->id = (int)id;
+    }
     e->h = h; e->addr = addr; e->size = size; e->is_write = is_write;
     e->nbytes = nbytes; e->lane = (int)(addr % SAS_DPI_BYTES);
-    e->id = (int)(h & 0xFu);
     e->in_use = 1; e->done = 0; e->resp = -1;
     if (is_write && wbuf) {
         for (i = 0; i < (unsigned)nbytes && (int)(e->lane + (int)i) < (int)SAS_DPI_BYTES; i++) {
@@ -228,6 +239,7 @@ long long sas_dpi_post(unsigned long long addr, int size, int is_write,
 #endif
     if (rc != 0) {                                   
         pthread_mutex_lock(&g_mtx);
+        g_id_busy &= ~(1u << e->id);
         e->in_use = 0;
         if (g_inflight) g_inflight--;
         g_busy_retry++;
@@ -286,6 +298,7 @@ int sas_dpi_wait(long long h, int *resp, unsigned char *rbuf, int nbytes)
     } else {
         if (resp) *resp = -1;
     }
+    g_id_busy &= ~(1u << e->id);        
     e->in_use = 0;
     pthread_mutex_unlock(&g_mtx);
     return r;

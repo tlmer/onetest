@@ -115,3 +115,25 @@ quit
 * Register and memory layouts are pinned by the driver (U0): `cmd_hdr=64`,
   `ITCT=128`, `SGE=24`, status buffer 1040 (IU at +16), slot buffer 4096.
 * `MODEL_TRACE=1` logs stage/interrupt/error events without changing behavior.
+  It also replays the **driver-original dmesg lines** at the same points the
+  kernel prints them, so a model run can be compared side by side with a Linux
+  boot log, e.g.:
+
+  ```
+  SAS: hisi_sas_v3_hw 0000:01:00.3: enabling device (0000 -> 0002)
+  SAS: scsi host0: hisi_sas_v3_hw
+  SAS: hisi_sas_v3_hw 0000:01:00.3: no reset method! continue
+  SAS: hisi_sas_v3_hw 0000:01:00.3: can not find DSM method, ignore
+  SAS: hisi_sas_v3_hw 0000:01:00.3: neither _PS0 nor _PR0 is defined
+  SAS: hisi_sas_v3_hw 0000:01:00.3: phyup: phy0 link_rate=8
+  SAS: sas: phy-0:0 added to port-0:0, phy_mask:0x1 (5000c50000000002)
+  SAS: sas: DOING DISCOVERY on port 0, pid:9
+  SAS: hisi_sas_v3_hw 0000:01:00.3: dev[1:1] found
+  SAS: scsi host0: scsi scan: INQUIRY result too short (5), using 36
+  SAS: sas: DONE DISCOVERY on port 0, pid:9, result:0
+  ```
+
+  `INQUIRY result too short` is emitted exactly when byte 4 of the INQUIRY data
+  (additional length) + 5 is below 36 -- the same condition as
+  `scsi_scan.c`. Other kernel-form lines are emitted on their events
+  (`erroneous completion`, task aborts).
