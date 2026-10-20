@@ -2,6 +2,7 @@
 
 #include "sas_axi_dpi_link.h"
 
+#include <stdio.h>
 #include <string.h>
 #include <pthread.h>
 #include <time.h>
@@ -119,6 +120,22 @@ int c_sas_slv_rbeat(unsigned long long addr, int size, int beat, int is_last,
         data[i] = *(unsigned char *)host;
     }
     g_slv_hits++;
+#if defined(SAS_JOINT_SIM)
+    
+
+    if (addr >= 0x3F000ull && addr < 0x40200ull) {
+        static FILE *lf;
+        if (!lf) lf = fopen("/dev/shm/sas_slv.log", "a");
+        if (lf) {
+            fprintf(lf, "SLV_RD addr=%llx beat=%d a=%llx n=%u bytes="
+                    "%02x %02x %02x %02x %02x %02x %02x %02x\n",
+                    addr, beat, a, n,
+                    data[0], data[1], data[2], data[3],
+                    data[4], data[5], data[6], data[7]);
+            fflush(lf);
+        }
+    }
+#endif
     return 0;
 }
 
@@ -202,7 +219,13 @@ long long sas_dpi_post(unsigned long long addr, int size, int is_write,
     g_submitted++;
     pthread_mutex_unlock(&g_mtx);
 
+#if defined(SAS_DPI_SV_POLL)
+    
+
+    rc = 0;
+#else
     rc = sas_axi_submit(addr, size, 1, e->id, is_write, h);
+#endif
     if (rc != 0) {                                   
         pthread_mutex_lock(&g_mtx);
         e->in_use = 0;
@@ -233,6 +256,18 @@ int sas_dpi_wait(long long h, int *resp, unsigned char *rbuf, int nbytes)
     while (!e->done) {
         if (pthread_cond_timedwait(&g_done_cv, &g_mtx, &ts) != 0) {
             g_timeouts++;                    
+#if defined(SAS_JOINT_SIM)
+            {
+                static FILE *tf;
+                if (!tf) tf = fopen("/dev/shm/sas_dpi_to.log", "a");
+                if (tf) {
+                    fprintf(tf, "TIMEOUT h=%llu addr=0x%llx is_write=%d size=%d\n",
+                            (unsigned long long)e->h,
+                            (unsigned long long)e->addr, e->is_write, e->size);
+                    fflush(tf);
+                }
+            }
+#endif
             e->retired = 1;                  
 
             if (g_inflight) g_inflight--;
@@ -258,24 +293,36 @@ int sas_dpi_wait(long long h, int *resp, unsigned char *rbuf, int nbytes)
 
 static unsigned g_xact_fail;
 
+#define SAS_DPI_XACT_TRIES 3
+
 static u32 dpi_rd32(u64 addr)
 {
     unsigned char rb[4];
-    long long h = sas_dpi_post(addr, 2, 0, NULL, 4);
-    if (h < 0) { g_xact_fail++; return 0xffffffffu; }
-    if (sas_dpi_wait(h, NULL, rb, 4) != 0) { g_xact_fail++; return 0xffffffffu; }
-    return (u32)rb[0] | ((u32)rb[1] << 8) | ((u32)rb[2] << 16) | ((u32)rb[3] << 24);
+    int t;
+    for (t = 0; t < SAS_DPI_XACT_TRIES; t++) {
+        long long h = sas_dpi_post(addr, 2, 0, NULL, 4);
+        if (h >= 0 && sas_dpi_wait(h, NULL, rb, 4) == 0)
+            return (u32)rb[0] | ((u32)rb[1] << 8) |
+                   ((u32)rb[2] << 16) | ((u32)rb[3] << 24);
+        usleep(1000);
+    }
+    g_xact_fail++;
+    return 0xffffffffu;
 }
 
 static void dpi_wr32(u64 addr, u32 val)
 {
     unsigned char wb[4];
-    long long h;
+    int t;
     wb[0] = (u8)(val & 0xFFu); wb[1] = (u8)((val >> 8) & 0xFFu);
     wb[2] = (u8)((val >> 16) & 0xFFu); wb[3] = (u8)((val >> 24) & 0xFFu);
-    h = sas_dpi_post(addr, 2, 1, wb, 4);
-    if (h < 0) { g_xact_fail++; return; }
-    if (sas_dpi_wait(h, NULL, NULL, 0) != 0) g_xact_fail++;
+    for (t = 0; t < SAS_DPI_XACT_TRIES; t++) {
+        long long h = sas_dpi_post(addr, 2, 1, wb, 4);
+        if (h >= 0 && sas_dpi_wait(h, NULL, NULL, 0) == 0)
+            return;
+        usleep(1000);
+    }
+    g_xact_fail++;
 }
 
 #define SAS_DPI_POOL_MAX (1u << 20)
