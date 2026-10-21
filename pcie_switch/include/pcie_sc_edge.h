@@ -200,6 +200,11 @@ struct RtlStubModule : sc_core::sc_module {
     
     bool        ari_forward = false;
     
+    
+    
+    
+    bool        allow_multi_dev = false;
+    
     uint8_t     side_pbus = 0, side_sec = 0, side_sub = 0;
     bool        side_link_up = false;
     

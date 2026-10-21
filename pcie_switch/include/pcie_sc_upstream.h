@@ -181,6 +181,11 @@ struct UspModule : sc_core::sc_module {
     
     CfgSpace usp_cfg;
     uint8_t  pbus = 0, sec = 0, sub = 0;
+    
+    
+    
+    uint8_t  own_bus = 0, own_dev = 0;
+    void set_identity(uint8_t b, uint8_t d) { own_bus = b; own_dev = d; }
     uint64_t mem_base = 0, mem_size = 0;       
     uint64_t pref_base = 0, pref_size = 0;     
     uint64_t mc_base = 0, mc_stride = 0, bc_base = 0, bc_size = 0;   

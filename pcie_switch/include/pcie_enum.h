@@ -77,6 +77,12 @@ struct Enumerator {
     DeviceTree run(RcModule& rc);           
     
     
+    
+    
+    
+    DeviceTree run_tree(RcModule& rc, int max_depth = 6);
+    
+    
     bool enroll_upstream_msi(RcModule& rc);
 
 private:
@@ -106,6 +112,17 @@ private:
     uint8_t  dn_base_ = 1;                  
     uint64_t alloc(uint64_t size, uint64_t gran);
     uint64_t alloc_pref(uint64_t size);     
+    
+    DeviceTree* dt_tree_ = nullptr;         
+    uint8_t  next_bus_tree_ = 1;            
+    int      max_depth_tree_ = 6;
+    
+    
+    int  scan_bus_tree(RcModule& rc, uint8_t bus, int depth, int port_hint,
+                       uint64_t& lo, uint64_t& hi);
+    
+    bool probe_type0_tree(RcModule& rc, uint8_t bus, uint8_t dev, int port_hint,
+                          EnumDev& e, uint64_t& lo, uint64_t& hi);
 };
 
 } 

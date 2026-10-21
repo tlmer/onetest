@@ -23,8 +23,8 @@ that sits behind the private port, so the model is independent of Gen5/Gen6/Gen7
 speed ratings.
 
 The boundary to the customer RTL is the DWC private-port contract
-(`client0`/`client1`/`trgt1`/DBI, 136 fields, 1237 bits for the shipped
-configuration). AXI is not part of this boundary. The model is not a Linux
+(`client0`/`client1`/`trgt1`/DBI, 109 fields, 994 bits for the shipped
+configuration; the unused RCPL bypass group is not part of the contract). AXI is not part of this boundary. The model is not a Linux
 device-driver proxy: it replaces the host and switch configuration software so
 that no operating system is required.
 
@@ -152,20 +152,26 @@ The application side of the DWC private port is generated from two inputs:
 1. the `PciePacker` layout in `include/pcie_priv_port.h`, and
 2. the DWC top-level port list for the customer configuration.
 
-Generated pieces, delivered as a reference in `rtl_bridge/`:
+The interface is presented as grouped packed buses, one vector per functional
+face and direction:
 
-* `priv_params.h` -- `W_<field>` width constants and derived `O_<field>` bit
-  offsets; the single source of the configuration-dependent widths
-* `priv_pins.sv` -- HDL pin bundle; every multi-bit width is a module parameter
-* `priv_bridge.h` -- SystemC glue: `priv_bridge_t<P>`, one port per field
-* `priv_bind.inc` -- intermediate `sc_signal` table: `priv_bind_t<P>` and binding
-* `priv_port.veo` -- Verilog instantiation template with parameter overrides
+| Group | Direction | Content |
+|---|---|---|
+| `client0_in` / `client0_out` | app -> core / core -> app | memory/IO/completion TLP channel |
+| `client1_in` / `client1_out` | app -> core / core -> app | configuration (cfg) TLP channel |
+| `radm_out` | core -> app | receive (RADM/TRGT1) TLP channel |
+| `trgt1_in` | app -> core | transmit halt / per-type flow control |
+| `msi_in` / `msi_out` | app -> core / core -> app | MSI interface |
+| `dbi_in` / `dbi_out` | app -> core / core -> app | raw DBI register handshake |
+| `sideband_out` | core -> app | bus/window sideband |
+| `err_in` / `err_out` | app -> core / core -> app | error/completion flags |
+| `misc_in` / `misc_out` | app -> core / core -> app | remaining status/control bits |
 
-All widths are parameters, matching the DWC RTL style. For a different
-customer configuration, provide a parameter struct with your `W_*` values (the
-`O_*` offsets are derived) and instantiate the templates with it; on the
-Verilog side override the module parameters shown in `priv_port.veo`. The
-`-sc_portmap` file is per-configuration and must be regenerated.
+Group widths are in `include/priv_groups_public.h` and are configuration
+dependent. The internal per-member bit order, the per-pin adapter and the VCS
+portmap are configuration-specific and are delivered privately with the
+licensed integration package; they are not part of the public repository.
+`rtl_bridge/priv_port_grouped.veo` is the public instantiation template.
 
 Key protocol rules:
 
@@ -175,11 +181,14 @@ Key protocol rules:
   beat makes the core see a continuous stream.
 * DBI: `cs` must remain asserted until `ack`; `ack` is exactly two cycles.
   Deasserting `cs` early aborts the access.
-* `client0` carries downstream TLP traffic, `client1` carries DBI accesses.
-  The halt input used for beat consumption is selected by the active channel.
+* `client0` carries memory/IO/completion TLPs; `client1` carries
+  configuration (cfg) TLPs that reach the DBI/CDM path. The raw DBI register
+  handshake is the separate `dbi_in`/`dbi_out` group. The halt input used for
+  beat consumption is selected by the active channel.
 
-The 136-field contract is configuration dependent. Regenerate the adapter
-when the customer changes DWC macro settings.
+The contract is configuration dependent (109 fields in the shipped
+configuration). Regenerate the adapter when the customer changes DWC macro
+settings.
 
 ## 9. Interrupt semantics
 

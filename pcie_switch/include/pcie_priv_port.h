@@ -93,12 +93,6 @@ struct Trgt1Signals {
     std::vector<uint8_t> grant_tlp_type;                   
 };
 
-struct RcplSignals {
-    std::vector<HdrFields> slot;                           
-    WideField data;                                        
-    uint64_t  dwen = 0;                                    
-};
-
 struct MsiSignals {
     bool     req = false;                                  
     uint64_t func_num = 0;                                 
@@ -144,7 +138,6 @@ struct ErrorSignals {
 struct CoreTopSignals {
     std::vector<XaliSignals> xali;                         
     Trgt1Signals  trgt1;
-    RcplSignals   rcpl;
     DbiSignals    dbi;
     MsiSignals    msi;                                     
     SidebandSignals sb;

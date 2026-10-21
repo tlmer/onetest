@@ -1,76 +1,45 @@
-# Private-Port Adapter Reference
+# Grouped Private-Port Interface (public reference)
 
-This directory contains the reference adapter between the SystemC model and
-the customer DWC PCIe RTL. The boundary is the DWC application-side private
-port (`client0`, `client1`, `trgt1`, `dbi`), not AXI.
+The boundary between this model and the customer DWC PCIe RTL is the
+application-side private port (`client0`, `client1`, `trgt1`, `dbi`), not AXI.
 
-## Files
+In the public package the interface is presented as grouped packed buses:
+one vector per functional face and direction.  The internal element order,
+the per-pin adapter and the VCS portmap are configuration-specific and are
+delivered privately with the licensed integration package; they are not part
+of this repository.
 
-| File | Role |
-|---|---|
-| `priv_params.h` | Field widths `W_<field>` and derived bit offsets `O_<field>` |
-| `priv_port.veo` | Verilog instantiation template with parameter overrides |
-| `priv_pins.sv` | HDL-side pin bundle; every multi-bit width is a module parameter |
-| `priv_bridge.h` | SystemC glue: `priv_bridge_t<P>`, one port per contract field |
-| `priv_bind.inc` | Intermediate `sc_signal` table: `priv_bind_t<P>` + double binding |
-| `priv_pins.map` | VCS `-sc_portmap` for the default parameter values |
-| `priv_pins_real.map` | Field map for the real-RTL co-simulation instance |
+## Groups
 
-## Parameters
+| Group | Direction | Content |
+|---|---|---|
+| `client0_in` / `client0_out` | app -> core / core -> app | memory/IO/completion TLP client channel |
+| `client1_in` / `client1_out` | app -> core / core -> app | configuration (cfg) TLP client channel (reaches DBI/CDM) |
+| `radm_out` | core -> app | receive (RADM/TRGT1) TLP channel |
+| `trgt1_in` | app -> core | transmit-side halt / per-type flow control |
+| `msi_in` / `msi_out` | app -> core / core -> app | MSI interface (request/grant, MSI enable) |
+| `dbi_in` / `dbi_out` | app -> core / core -> app | raw DBI register handshake (`dbi_*`, `lbc_dbi_*`) |
+| `sideband_out` | core -> app | bus/window sideband (`cfg_pbus_num`, `cfg_2ndbus_num`, ...) |
+| `err_in` / `err_out` | app -> core / core -> app | completion/error flags |
+| `misc_in` / `misc_out` | app -> core / core -> app | remaining status/control bits |
 
-All configuration-dependent widths are parameters; nothing is tied to the
-design used for the acceptance run.
-
-* **SystemC** - `priv_params.h` defines `W_<field>` for every contract field
-  and derives `O_<field>` offsets from them. `priv_bridge_t<P>` and
-  `priv_bind_t<P>` are templates over that parameter struct. The aliases
-  `priv_bridge` / `priv_bind` select the shipped defaults. For a different DWC
-  configuration, supply a parameter struct with your widths (the offsets are
-  computed automatically) and instantiate the templates with it.
-* **Verilog** - `priv_dut #(...)` exposes one parameter per multi-bit field.
-  Defaults match the DWC configuration used to generate the adapter;
-  `priv_port.veo` shows how to override them.
-* **VCS portmap** - `priv_pins.map` is per-configuration by nature (a portmap
-  file cannot carry Verilog parameters). Regenerate it when the widths change.
-
-The shipped field set is 136 fields / 1237 bits. DWC macro settings also
-change the number of functions and the field list itself; in that case the
-adapter must be regenerated with the new top-level port table.
-
-## Wiring
-
-```
-SystemC model                 Adapter (this directory)            Customer DWC RTL
------------------             -------------------------            ----------------
-CrossbarModule / DspPort  <-> priv_bridge.h (sc ports)   <->   <dwc_pcie_top> private port
-                                priv_bind.inc
-                                priv_pins.sv  (VCS SC<->HDL pin bundle)
-```
-
-`clk` and `rst_n` are the core clock/reset of the private-port domain. All
-client/radm/dbi signals are synchronous to `clk`.
+Group widths are listed in `include/priv_groups_public.h` and follow the DWC
+macro configuration.  `priv_port_grouped.veo` is the instantiation template.
 
 ## Protocol rules
 
 1. Beat consumption: a client beat is consumed when `(hv | dv) & ~halt` is
-   true in the same core clock cycle. Sampling `halt` one cycle late holds
-   the first beat too long and makes the core consume it twice.
-2. Frame separation: drive an invalid beat between frames. Holding the last
-   beat is interpreted as a continuous stream.
-3. `client0` carries TLP traffic; `client1` carries DBI accesses. Select the
-   halt input by the active channel.
+   true in the same core clock cycle.  Do not sample `halt` one cycle late.
+2. Frame separation: drive an invalid beat between frames.
+3. `client0` carries memory/IO/completion TLPs; `client1` carries cfg TLPs.
+   Select the halt input by the active channel.
 4. DBI: `cs` remains asserted until `ack`; `ack` is exactly two cycles.
    Deasserting `cs` early aborts the access.
-5. Multi-DW TLPs carry byte enables as `{last_be, first_be}`; single-DW TLPs
-   use `first_be` and require `last_be` to be zero.
+5. Multi-DW TLPs carry `{last_be, first_be}`; single-DW TLPs use `first_be`
+   and require `last_be` to be zero.
 
 ## Regeneration
 
-The adapter files are produced from two inputs:
-
-1. the `PciePacker` field layout in `include/pcie_priv_port.h`, and
-2. the DWC top-level port table for the customer configuration.
-
-The generator is available from the model vendor; send the DWC macro
-configuration (or the generated `*_cc_constants.svh`) to obtain a matching
-adapter. Do not hand-edit the generated files.
+The grouped widths and the private adapter are generated from the `PciePacker`
+layout and the DWC top-level port table.  When the customer changes DWC macro
+settings, request a regenerated adapter from the model vendor.
