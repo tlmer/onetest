@@ -25,11 +25,13 @@ as it is complete:
 | [`network/`](network/) | ethernet IP models (GMAC / XLGMAC) + driver key table + the class layer (netdev/NAPI/flow control) | available |
 | [`usb/`](usb/) | USB host model (DWC_usb3, xHCI) + driver key table + the class layer (SET_CONFIGURATION / endpoints / class drivers) | available |
 | [`pcie/`](pcie/) | PCIe root-complex host model (DWC Root Port, 460A/490A) + driver key table + AXI4 contract (ID=4/8 outstanding/128-bit), DMA-route, control-plane ABI | available |
+| [`pcie_switch/`](pcie_switch/) | PCIe switch host-side TLM: root complex, upstream port, crossbar, MC/BC, no-OS enumeration; private-port bridge to customer DWC RTL; binary model library + interactive console | available |
 | [`smmu/`](smmu/) | SMMUv3 host model (SMMU-600/700, two IIDR product ids) + driver key table | available |
 | [`gpu/mali450/`](gpu/mali450/) | ARM Mali Utgard (Mali-450/400, `lima`) Linux-proxy host model: bring-up/MMU/page tables, GEM + VAs, GP/PP jobs, fences, fault/recovery; control ABI + testcase ABI + DTS template + NoC bridge | available |
 | [`npx/`](npx/) | Synopsys ARC NPX6/VPX host model: remoteproc firmware load, ARCSYNC v1/v2 control, the 7-command app UAPI + testcase control ABI, runtime DTS loader, dma-buf; DTS template + AXI4/DPI NoC bridge | available |
 
-Each delivery ships source, a self-test that builds from source, and a single
+Each delivery ships source or a binary model library as appropriate, a
+self-test (or console) that builds against the shipped interface, and a single
 verdict line:
 
 ```sh
@@ -46,4 +48,5 @@ cd npx/smoke && make && ./tb_npx_smoke             # NPX_SMOKE PASS=47 FAIL=0
 cd npx/smoke && ./tb_npx_tc_ioctl                  # testcase channel: 17/0
 cd npx/smoke && ./tb_npx_dts                       # DTS loader: 26/0
 cd npx/example && make && ./npx_example            # NPX_EXAMPLE PASS
+cd pcie_switch/console && make && ./pcie_switch_console   # testcases + coverage
 ```
