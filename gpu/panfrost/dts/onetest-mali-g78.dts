@@ -1,0 +1,16 @@
+/dts-v1/;
+
+/ {
+	model = "onetest-mali-g78-template";
+	compatible = "onetest,test-bench";
+
+	gpu@e0000 {
+		compatible = "arm,mali-g78";
+		reg = <0x000e0000 0x00010000>;
+		interrupts = <0 0 4>;
+		onetest,ip-mask = <0x00000001>;		
+		onetest,irq-vector = <0x00000000>;
+		onetest,mem-size = <0x10000000>;	
+		onetest,bo-limit = <0x04000000>;	
+	};
+};
