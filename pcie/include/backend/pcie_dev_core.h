@@ -49,6 +49,23 @@ struct pcie_cfg_dev {
     int  rebar_cap_off;                   
     int  rebar_bar;                       
     int  vc_cap_off;                      
+    int  dpc_cap_off;                     
+    int  acs_cap_off;                     
+    int  ats_cap_off;                     
+    int  pasid_cap_off;                   
+
+    
+
+    int  crs_left;
+    unsigned crs_injected;
+
+    
+
+    unsigned lnk_speed;                   
+    unsigned lnk_width;                   
+    int      lnk_up;
+    unsigned lnk_training;
+
     u32  msix_table_bir;                  
     u32  msix_table_off;                  
     unsigned msix_nvec;                   
@@ -112,6 +129,18 @@ struct pcie_dev_core {
     unsigned pme_msgs;             
     unsigned pme_gated;            
     unsigned flr_count;            
+
+    
+    unsigned dpc_triggers;         
+    unsigned dpc_blocks;           
+    unsigned dpc_irq_count;        
+    unsigned dpc_irq_level;        
+
+    
+    unsigned ecrc_checked;         
+    unsigned ecrc_errors;          
+    unsigned ecrc_gated;           
+    unsigned link_retrains;        
 
     
 
@@ -197,6 +226,25 @@ int  pcie_dev_core_flr(struct pcie_dev_core *d, int bus, int slot, int func);
 int  pcie_dev_core_rebar_attach(struct pcie_dev_core *d, int bus, int slot, int func, int baridx);
 
 int  pcie_dev_core_vc_attach(struct pcie_dev_core *d, int bus, int slot, int func);
+
+int  pcie_dev_core_dpc_attach(struct pcie_dev_core *d, int bus, int slot, int func);
+
+int  pcie_dev_core_acs_attach(struct pcie_dev_core *d, int bus, int slot, int func);
+
+int  pcie_dev_core_ats_attach(struct pcie_dev_core *d, int bus, int slot, int func);
+int  pcie_dev_core_pasid_attach(struct pcie_dev_core *d, int bus, int slot, int func);
+
+int  pcie_dev_core_crs_set(struct pcie_dev_core *d, int bus, int slot, int func, int n);
+
+void pcie_dev_core_set_link(struct pcie_dev_core *d, int up, unsigned speed, unsigned width);
+unsigned pcie_dev_core_link_speed(const struct pcie_dev_core *d);
+
+int  pcie_dev_core_dpc_contained(const struct pcie_dev_core *d);
+int  pcie_dev_core_dpc_clear(struct pcie_dev_core *d);
+unsigned pcie_dev_core_dpc_level(const struct pcie_dev_core *d);
+
+int  pcie_dev_core_ecrc_error(struct pcie_dev_core *d, int bus, int slot, int func,
+                              u32 reqid, int bad);
 
 int  pcie_dev_core_aer_raise(struct pcie_dev_core *d, int bus, int slot, int func,
                              u32 bit, int is_cor);

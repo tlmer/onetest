@@ -1,49 +1,18 @@
-// ============================================================================
-// axi_dpi_bridge.sv -- onetest Linux-proxy model <-> AXI4 NoC bridge (SV side)
-//
-//   **FAMILY-WIDE FILE** -- one bridge for every onetest line (pcie/usb/
-//   storage/network/smmu/nvme).  The customer-facing interface (module name,
-//   ports, parameters, counters) is IDENTICAL across lines; only the DPI
-//   symbol prefix differs (pcie_/usb_/mmc_/sata_/ufs_/eth_/smmu_/nvme_) so
-//   that several models may coexist in one simulation without symbol clashes.
-//
-//   [*] Interface contract (customer checklist #2): AxID width = 4 |
-//       outstanding = 8 | data width = 128 bit (16 B/beat, narrow writes
-//       select lanes via WSTRB)
-//   => this bridge = an 8-slot in-flight table (in-order within one ID;
-//      different IDs may complete out of order).
-//
-//   Ports
-//     m_*     AXI4 **master**  -> the NoC (model issues register/config/memory)
-//     s_*     AXI4 **slave**   <- the NoC (DUT posted writes: DMA write-back, MSI)
-//     irq_out **active-high level** interrupt OUT (model -> the SoC's interrupt
-//             controller; stays high while pending, falls when the host
-//             services it).  Used by pcie (MSI/MSI-X level). Lines whose role
-//             is the *host* (usb/storage/network/smmu) tie it to 1'b0.
-//     irq_in  **active-high level** interrupt IN (the DUT -> the model).
-//             Sampled every clk; on a value change the C side is told
-//             (`c_*_irq_set`), which latches it and runs the line's ISR.
-//             pcie ties it to 1'b0.
-//
-//   DPI  exports (C side calls in) : <p>_axi_submit
-//        imports (SV calls out)    : c_<p>_wdata / c_<p>_rdata / c_<p>_done
-//                                    c_<p>_slv_wbeat / c_<p>_slv_rbeat
-//                                    c_<p>_slv_bresp
-//                                    c_<p>_irq_level / c_<p>_irq_set
-// ============================================================================
+
+
 `timescale 1ns/1ps
 
 module axi_dpi_bridge #(
-    parameter integer AW        = 64,       // 64-bit address (host/PCIe-style)
-    parameter integer IDW       = 4,        // [*] AxID width = 4 (contract)
-    parameter integer DW        = 128,      // [*] data width = 128 bit (contract)
-    parameter integer OSLOT     = 8,        // [*] outstanding = 8 (contract)
-    parameter integer MAX_BEATS = 256       // 4 KB / 16 B
+    parameter integer AW        = 64,       
+    parameter integer IDW       = 4,        
+    parameter integer DW        = 128,      
+    parameter integer OSLOT     = 8,        
+    parameter integer MAX_BEATS = 256       
 )(
     input  wire             clk,
     input  wire             rst_n,
 
-    // -- AXI4 master port (model -> NoC) --
+    
     output reg  [IDW-1:0]   m_awid,
     output reg  [AW-1:0]    m_awaddr,
     output reg  [7:0]       m_awlen,
@@ -78,7 +47,7 @@ module axi_dpi_bridge #(
     input  wire             m_rvalid,
     output reg              m_rready,
 
-    // -- AXI4 slave port (NoC -> model: DUT posted writes / reads) --
+    
     input  wire [IDW-1:0]   s_awid,
     input  wire [AW-1:0]    s_awaddr,
     input  wire [7:0]       s_awlen,
@@ -113,20 +82,20 @@ module axi_dpi_bridge #(
     output reg              s_rvalid,
     input  wire             s_rready,
 
-    // -- interrupts: ACTIVE HIGH, level (out = model -> SoC; in = DUT -> model) --
+    
     output reg              irq_out,
     input  wire             irq_in,
 
-    // -- observation surface (criteria) --
+    
     output reg  [31:0]      n_done,
     output reg  [31:0]      n_busy_retry,
     output reg  [31:0]      n_rerr,
     output reg  [31:0]      n_slv_recv,
     output reg  [31:0]      n_slv_miss
 );
-    localparam integer SLW = 3;             // OSLOT=8 => 3-bit slot index
+    localparam integer SLW = 3;             
 
-    // -- 8-slot in-flight table (model -> NoC) --
+    
     reg              s_valid [0:OSLOT-1];
     reg              s_isw   [0:OSLOT-1];
     reg  [AW-1:0]    s_addr  [0:OSLOT-1];
@@ -137,14 +106,14 @@ module axi_dpi_bridge #(
     reg  [8:0]       s_beat  [0:OSLOT-1];
     reg              s_issued[0:OSLOT-1];
 
-    // -- C-side interface (DPI) --
+    
     import "DPI-C" function void c_pcie_wdata(input longint unsigned h, input int beat,
                                               output bit [DW-1:0] data, output bit [DW/8-1:0] strb);
     import "DPI-C" function void c_pcie_rdata(input longint unsigned h, input int beat,
                                               input bit [DW-1:0] data);
     import "DPI-C" function void c_pcie_done (input longint unsigned h, input int resp);
 
-    // slave-side: one call per BEAT => the C side routes each beat (axs_recv)
+    
     import "DPI-C" function int  c_pcie_slv_wbeat(input longint unsigned addr, input int size,
                                                   input int beat, input bit is_last, input int id,
                                                   input bit [DW-1:0] data, input bit [DW/8-1:0] strb);
@@ -155,7 +124,7 @@ module axi_dpi_bridge #(
     import "DPI-C" function int  c_pcie_irq_level();
     import "DPI-C" function void c_pcie_irq_set(input int level);
 
-    // -- DPI exports: C-side submit (find a free slot; full => return 1 => C retries) --
+    
     export "DPI-C" function pcie_axi_submit;
 
     integer k;
@@ -176,7 +145,7 @@ module axi_dpi_bridge #(
         return 0;
     endfunction
 
-    // -- master dispatch --
+    
     localparam I_IDLE = 2'd0, I_AW = 2'd1, I_W = 2'd2, I_AR = 2'd3;
     reg [1:0]  ist;
     reg [SLW-1:0] cur;
@@ -213,7 +182,7 @@ module axi_dpi_bridge #(
                 end
                 I_AW: if (m_awready) begin
                     m_awvalid <= 1'b0;
-                    c_pcie_wdata(s_h[cur], 9'd0, tmp, tmps);     // preload first beat
+                    c_pcie_wdata(s_h[cur], 9'd0, tmp, tmps);     
                     m_wdata <= tmp; m_wstrb <= tmps;
                     m_wlast <= (s_beats[cur] == 9'd1);
                     m_wvalid <= 1'b1;
@@ -236,7 +205,7 @@ module axi_dpi_bridge #(
         end
     end
 
-    // -- master completion: B/R claim the slot back by ID --
+    
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             m_bready <= 1'b1; m_rready <= 1'b1;
@@ -270,10 +239,10 @@ module axi_dpi_bridge #(
         end
     end
 
-    // -- slave engine: DUT posted writes / reads => per-beat route callback --
-    //    The C side routes ONE beat per call (the model's `axs_recv` unit),
-    //    so this side hands over (base, size, beat_index) and the C side
-    //    computes `base + beat*2^size` -- no guesswork on either side.
+    
+    
+    
+    
     reg [AW-1:0] sw_addr;
     reg [2:0]    sw_size;
     reg [8:0]    sw_beat;
@@ -282,15 +251,17 @@ module axi_dpi_bridge #(
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             s_awready <= 1'b1; s_wready <= 1'b1;
+            s_arready <= 1'b1;                       
+
             s_bvalid <= 1'b0; s_rvalid <= 1'b0;
             s_bresp <= 2'b00; s_rresp <= 2'b00; s_rlast <= 1'b0;
             sw_addr <= {AW{1'b0}}; sw_size <= 3'd0; sw_beat <= 9'd0; sw_id <= {IDW{1'b0}};
         end else begin
-            // write address accepted => latch the burst descriptor
+            
             if (s_awvalid && s_awready) begin
                 sw_addr <= s_awaddr; sw_size <= s_awsize; sw_id <= s_awid; sw_beat <= 9'd0;
             end
-            // write data beat => route it; last beat => B with the routed resp
+            
             if (s_wvalid && s_wready) begin
                 int r;
                 r = c_pcie_slv_wbeat(sw_addr, sw_size, sw_beat, s_wlast, sw_id, s_wdata, s_wstrb);
@@ -303,28 +274,32 @@ module axi_dpi_bridge #(
                 end
             end
             if (s_bvalid && s_bready) s_bvalid <= 1'b0;
-            // read: single-beat service (prototype scope -- .veo states the limit)
+            
             if (s_arvalid && s_arready) begin
                 s_rid <= s_arid;
                 c_pcie_slv_rbeat(s_araddr, s_arsize, 9'd0, (s_arlen == 8'd0), s_arid, s_rdata);
                 s_rresp <= 2'b00;
                 s_rlast <= (s_arlen == 8'd0);
                 s_rvalid <= 1'b1;
+                s_arready <= 1'b0;                       
             end
-            if (s_rvalid && s_rready) s_rvalid <= 1'b0;
+            if (s_rvalid && s_rready) begin
+                s_rvalid <= 1'b0;
+                s_arready <= 1'b1;                       
+            end
         end
     end
 
-    // -- interrupt OUT line: ACTIVE HIGH level, sampled from the model --
+    
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) irq_out <= 1'b0;
         else        irq_out <= (c_pcie_irq_level() != 0);
     end
 
-    // -- interrupt IN line: DUT -> model.  VALUE-CHANGE driven (family rule 7):
-    //    the C side is told only when the level actually changes, and once at
-    //    reset (level 0).  The C side latches it (never a bare level) and
-    //    runs the line's ISR -- see <p>_axi_dpi_link.c.
+    
+    
+    
+    
     reg irq_in_q;
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

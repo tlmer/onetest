@@ -304,6 +304,82 @@ typedef u64 resource_size_t;
 #define  PCI_VC_RES_CTRL_ENABLE      0x80000000 
 #define PCI_VC_RES_STATUS       0x18
 #define  PCI_VC_RES_STATUS_TABLE     0x00000001
+
+#define PCI_CRS_RESPONSE        0xffff0001u
+
+#define  PCI_EXP_LNKCAP_SLS          0x0000000fu   
+#define  PCI_EXP_LNKCAP_SLS_2_5GB    0x00000001u   
+#define  PCI_EXP_LNKCAP_SLS_5_0GB    0x00000002u   
+#define  PCI_EXP_LNKCAP_SLS_8_0GB    0x00000003u   
+#define  PCI_EXP_LNKCAP_MLW          0x000003f0u   
+#define  PCI_EXP_LNKCAP_MLW_SHIFT    4
+#define  PCI_EXP_LNKCTL_RL           0x0020u       
+#define  PCI_EXP_LNKSTA_CLS          0x000fu       
+#define  PCI_EXP_LNKSTA_NLW          0x03f0u       
+#define  PCI_EXP_LNKSTA_NLW_X1       0x0010u       
+#define  PCI_EXP_LNKSTA_NLW_SHIFT    4             
+#define  PCI_EXP_LNKSTA_LT           0x0800u       
+#define  PCI_EXP_LNKSTA_DLLLA        0x2000u       
+#define  PCI_EXP_LNKCAP2             0x2cu         
+#define  PCI_EXP_LNKCAP2_SLS_2_5GB   0x00000002u   
+#define  PCI_EXP_LNKCAP2_SLS_5_0GB   0x00000004u   
+#define  PCI_EXP_LNKCAP2_SLS_8_0GB   0x00000008u   
+#define  PCI_EXP_LNKCTL2_TLS         0x000fu       
+#define  PCI_EXP_LNKCTL2_TLS_2_5GT   0x0001u       
+#define  PCI_EXP_LNKCTL2_TLS_5_0GT   0x0002u       
+#define  PCI_EXP_LNKCTL2_TLS_8_0GT   0x0003u       
+
+#define PCI_EXT_CAP_ID_DPC           0x1D
+#define PCI_EXP_DPC_CAP              0x04
+#define  PCI_EXP_DPC_CAP_RP_EXT      0x0020u       
+#define  PCI_EXP_DPC_CAP_SW_TRIGGER  0x0080u       
+#define  PCI_EXP_DPC_CAP_DL_ACTIVE   0x1000u
+#define PCI_EXP_DPC_CTL              0x06
+#define  PCI_EXP_DPC_CTL_EN_FATAL    0x0001u       
+#define  PCI_EXP_DPC_CTL_EN_NONFATAL 0x0002u       
+#define  PCI_EXP_DPC_CTL_INT_EN      0x0008u       
+#define PCI_EXP_DPC_STATUS           0x08
+#define  PCI_EXP_DPC_STATUS_TRIGGER      0x0001u   
+#define  PCI_EXP_DPC_STATUS_TRIGGER_RSN  0x0006u   
+#define  PCI_EXP_DPC_STATUS_INTERRUPT    0x0008u
+#define  PCI_EXP_DPC_STATUS_TRIGGER_RSN_EXT 0x0060u 
+#define PCI_EXP_DPC_SOURCE_ID        0x0a
+
+#define PCI_EXT_CAP_ID_ACS           0x0D
+#define PCI_ACS_CAP                  0x04
+#define  PCI_ACS_SV                  0x0001u       
+#define  PCI_ACS_TB                  0x0002u       
+#define  PCI_ACS_RR                  0x0004u       
+#define  PCI_ACS_CR                  0x0008u       
+#define  PCI_ACS_UF                  0x0010u       
+#define  PCI_ACS_EC                  0x0020u       
+#define  PCI_ACS_DT                  0x0040u       
+#define PCI_ACS_CTRL                 0x06
+
+#define PCI_EXT_CAP_ID_ATS           0x0F
+#define PCI_ATS_CAP                  0x04
+#define  PCI_ATS_CAP_QDEP(x)         ((x) & 0x1fu) 
+#define  PCI_ATS_MAX_QDEP            32
+#define  PCI_ATS_CAP_PAGE_ALIGNED    0x0020u
+#define PCI_ATS_CTRL                 0x06
+#define  PCI_ATS_CTRL_ENABLE         0x8000u       
+#define  PCI_ATS_CTRL_STU(x)         ((x) & 0x1fu) 
+#define  PCI_ATS_MIN_STU             12
+
+#define PCI_EXT_CAP_ID_PASID         0x1B
+#define PCI_PASID_CAP                0x04
+#define  PCI_PASID_CAP_EXEC          0x0002u
+#define  PCI_PASID_CAP_PRIV          0x0004u
+#define PCI_PASID_CTRL               0x06
+#define  PCI_PASID_CTRL_ENABLE       0x0001u       
+#define  PCI_PASID_CTRL_EXEC         0x0002u
+#define  PCI_PASID_CTRL_PRIV         0x0004u
+
+#define  PCI_ERR_CAP_ECRC_GENC       0x00000020u   
+#define  PCI_ERR_CAP_ECRC_GENE       0x00000040u   
+#define  PCI_ERR_CAP_ECRC_CHKC       0x00000080u   
+#define  PCI_ERR_CAP_ECRC_CHKE       0x00000100u   
+#define  PCI_ERR_UNC_ECRC            0x00080000u   
 #define PCI_CAP_VC_PER_VC_SIZEOF 0x0c
 
 #define IORESOURCE_IO        0x00000100ul

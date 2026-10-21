@@ -148,11 +148,15 @@ vendor wide -- the ledger predicate still rejects every other chip maker.
 ## 5. Consistency with Linux
 
 The model is built from the kernel's own work, per function, with a `K:` citation
-on every mechanism (see `model/` sources and `STATUS`'s criteria tables).
+on every mechanism (see `model/` sources and `STATUS (internal)`'s criteria tables).
 The experience is intended to match Linux's: enumeration allocates addresses and
 programs BARs the way `drivers/pci/` does, MSI/MSI-X follow `drivers/pci/msi/`,
 SR-IOV follows `drivers/pci/iov.c`, AER follows `drivers/pci/pcie/aer.c`, power
-management follows `drivers/pci/pci.c` + `pcie/aspm.c`. It is not bit-identical
+management follows `drivers/pci/pci.c` + `pcie/aspm.c`; CRS follows the
+`pci_bus_read_dev_vendor_id` retry loop (`drivers/pci/probe.c`), DPC follows
+`drivers/pci/pcie/dpc.c`, link retraining follows `pcie_retrain_link`
+(`drivers/pci/pci.c`), ACS/ATS/PASID follow `drivers/pci/pci.c` and
+`drivers/pci/ats.c`, and ECRC checking follows `drivers/pci/pcie/ecrc.c`. It is not bit-identical
 to a full OS — it is the host-side driver behavior, replayed over AXI4.
 
 ## 6. Files
@@ -167,7 +171,7 @@ pcie/
 ├─ build_lib.sh        rebuild the library
 ├─ smoke/              public-ABI smoke bench (56 green / 4 red)
 ├─ example/            smallest runnable example
-├─ model/              model sources + 9 internal benches
+├─ model/              model sources + 10 internal benches
 │   └─ tlm/            SystemC/TLM build of the same sources (+ joint bench)
 └─ hal/                IP key table (compatible -> driver/model)
 ```

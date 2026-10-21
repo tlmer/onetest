@@ -112,7 +112,7 @@ int c_pcie_slv_wbeat(long long unsigned addr, int size, int beat, int is_last,
     b.addr = (u64)addr + ((u64)beat << size);      
     if (n > AXI4_TLM_DATA_BYTES - lane) n = AXI4_TLM_DATA_BYTES - lane;
     for (i = 0; i < n; i++) {
-        if (strb && strb[i]) { b.data[lane + i] = data[i]; b.strb[lane + i] = 1; }
+        if (strb && (((strb[(lane + i) >> 3] >> ((lane + i) & 7u)) & 1u))) { b.data[lane + i] = data[i]; b.strb[lane + i] = 1; }
     }
     if (axs_recv(pcie_model_axs(), &b) < 0) return (int)b.resp;   
     return (int)b.resp;

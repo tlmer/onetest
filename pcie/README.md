@@ -3,7 +3,7 @@
 This class models the Linux side of PCIe: the Root Port controller driver plus
 everything Linux does for it (configuration access, enumeration, BAR probing and
 resource assignment, MSI/MSI-X, SR-IOV/ARI, AER, power management, FLR/ReBAR/INTx,
-VC).  It runs **without a Linux OS** and sits on a **standard AXI4 interface**, so
+VC, CRS, DPC, link training, ACS/ATS/PASID, ECRC).  It runs **without a Linux OS** and sits on a **standard AXI4 interface**, so
 it drops onto a NoC in front of the controller IP under test.
 
 Organised as **subclass -> IP vendor -> IP model**, plus a key table keyed by the

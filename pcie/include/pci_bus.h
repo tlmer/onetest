@@ -48,6 +48,13 @@ struct pci_dev {
     int aer_cap;                        
     int pm_cap;                         
     int l1ss_cap;                       
+    int acs_cap;                        
+    int ats_cap;                        
+    int pasid_cap;                      
+    int dpc_cap;                        
+    int ats_enabled;                    
+    int pasid_enabled;                  
+    int pasid_features;                 
     int current_state;                  
     unsigned pcie_mpss : 3;             
     int broken_intx_masking;            
@@ -179,6 +186,7 @@ void pci_enum_reset(void);
 
 struct pci_enum_stats {
     unsigned cfg_reads, cfg_writes, cfg_ur;      
+    unsigned crs_retries, crs_timeouts;          
     unsigned bar_probe_writes, bar_probe_reads;  
     unsigned devices_found, bridges_found, buses;
     unsigned windows_assigned, bars_assigned;

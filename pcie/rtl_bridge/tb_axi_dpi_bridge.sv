@@ -1,16 +1,5 @@
-// ============================================================================
-// tb_axi_dpi_bridge.sv -- self-check bench for axi_dpi_bridge (xsim)
-//   A minimal AXI4 slave model serves the bridge's master port; a minimal AXI4
-//   master driver feeds its slave port.  Criteria (final line: PASS/FAIL):
-//     C-1  submit write -> AW(id/addr/len/size) correct; W valid after AW; B -> c_pcie_done
-//     C-2  submit read  -> AR correct; R data -> c_pcie_rdata; done
-//     C-3  8 outstanding accepted; the 9th returns 1 (busy) and counts n_busy_retry
-//     C-4  narrow write keeps the C-side byte-lane strobes (0x00F0)
-//     C-5  slave port: AW+W -> c_pcie_slv_wbeat (per beat, beat index 0 then 1); B resp OKAY
-//     C-6  slave port DECERR: resp=3 propagates to bresp
-//     C-7  interrupt: active-high LEVEL (rises with the request, stays, falls when cleared)
-//     C-8  no spurious rerr
-// ============================================================================
+
+
 `timescale 1ns/1ps
 
 module tb_axi_dpi_bridge;
@@ -19,7 +8,7 @@ module tb_axi_dpi_bridge;
     reg clk = 0, rst_n = 0;
     always #5 clk = ~clk;
 
-    // bridge ports
+    
     wire [IDW-1:0] m_awid; wire [AW-1:0] m_awaddr; wire [7:0] m_awlen; wire [2:0] m_awsize;
     wire [1:0] m_awburst; wire m_awvalid; wire m_awready;
     wire [DW-1:0] m_wdata; wire [DW/8-1:0] m_wstrb; wire m_wlast, m_wvalid, m_wready;
@@ -63,9 +52,9 @@ module tb_axi_dpi_bridge;
         .n_slv_recv(n_slv_recv), .n_slv_miss(n_slv_miss)
     );
 
-    // --- DPI exports the bench drives ---
-    /* pcie_axi_submit is an EXPORT inside the bridge -- call it through the instance
-       (an exported function is visible only within its own scope). */
+    
+    
+
     import "DPI-C" function void tb_set_irq(input int lvl);
     import "DPI-C" function void tb_set_lane(input longint unsigned h, input int lane, input int size);
     import "DPI-C" function int  tb_slv_wbeats();
@@ -73,8 +62,8 @@ module tb_axi_dpi_bridge;
     import "DPI-C" function int  tb_irq_in_level();
     import "DPI-C" function int  tb_irq_in_events();
 
-    // ---------------------------------------------------------------- AXI4 slave model
-    // serves the bridge master port: AW/W -> B (when wlast); AR -> 1-beat R bursts
+    
+    
     reg [IDW-1:0] sl_id;
     reg b_valid = 0;
     reg r_valid = 0;
@@ -86,10 +75,10 @@ module tb_axi_dpi_bridge;
     assign m_arready = 1'b1;
     assign m_bvalid  = b_valid;
     assign m_bid     = sl_id;
-    assign m_bresp   = 2'b00;                       /* OKAY */
+    assign m_bresp   = 2'b00;                       
     assign m_rvalid = r_valid;
     assign m_rid    = rd_id;
-    assign m_rdata  = {4{rd_addr[15:0], 16'h0}} ^ {128{1'b1}};   /* pattern */
+    assign m_rdata  = {4{rd_addr[15:0], 16'h0}} ^ {128{1'b1}};   
     assign m_rresp  = 2'b00;
     assign m_rlast  = (rd_left == 8'd1);
 
@@ -109,9 +98,8 @@ module tb_axi_dpi_bridge;
         if (m_wvalid && m_wready) begin
             w_seen++; m_wdata_l <= m_wdata; m_wstrb_l <= m_wstrb; w_beats_seen++;
         end
-        /* B: assert on wlast, HOLD a full cycle until taken (bready) --
-           a pulse shorter than a cycle is never seen by an edge-sampling consumer
-           (the first version used an intra-block #1: the bridge never saw the B). */
+        
+
         if (m_wvalid && m_wready && m_wlast) begin
             b_valid <= 1'b1; sl_id <= m_awid_l;
         end else if (b_valid && m_bready) begin
@@ -126,7 +114,7 @@ module tb_axi_dpi_bridge;
         end
     end
 
-    // ---------------------------------------------------------------- AXI4 master driver (feeds the bridge slave port)
+    
     task slv_write(input [AW-1:0] addr, input [IDW-1:0] id, input integer beats, input [2:0] size);
         integer i;
         begin
@@ -161,8 +149,8 @@ module tb_axi_dpi_bridge;
         rst_n = 1;
         repeat (2) @(posedge clk);
 
-        // C-1: submit an aligned 4-byte write (size=2, strb 0x00F0 from the stub)
-        tb_set_lane(64'hAA, 4, 2);                       /* 4-byte access at lane 4 */
+        
+        tb_set_lane(64'hAA, 4, 2);                       
         chk(dut.pcie_axi_submit(64'h1004, 2, 1, 4'h3, 1, 64'hAA) == 0, "C-1.0 submit accepted");
         repeat (6) @(posedge clk);
         chk(aw_seen == 1 && m_awid_l == 4'h3 && m_awaddr_l == 64'h1004 && m_awsize_l == 3'd2,
@@ -171,34 +159,34 @@ module tb_axi_dpi_bridge;
         repeat (4) @(posedge clk);
         chk(n_done == 32'd1 && n_rerr == 0, "C-1.3 write completed via B -> c_pcie_done");
 
-        // C-2: submit a 1-beat read
+        
         chk(dut.pcie_axi_submit(64'h2000, 4, 1, 4'h5, 0, 64'hBB) == 0, "C-2.0 read submit accepted");
         repeat (8) @(posedge clk);
         chk(ar_seen == 1 && n_done == 32'd2, "C-2.1 AR issued and read completed");
 
-        // C-3: outstanding = 8 accepted, the 9th is refused
+        
         begin integer i, r;
             for (i = 0; i < 8; i++) r = dut.pcie_axi_submit(64'h3000 + i*16, 2, 1, i[3:0], 1, 64'h100 + i);
             chk(r == 0, "C-3.1 eight more submits accepted (8 slots)");
             r = dut.pcie_axi_submit(64'h4000, 2, 1, 4'h7, 1, 64'h200);
-            /* r is the function return (immediate); n_busy_retry is read through the
-               output port net, which settles one delta later -- sample it after edges. */
+            
+
             repeat (2) @(posedge clk);
             chk(r == 1 && n_busy_retry >= 32'd1, "C-3.2 the 9th submit is refused (busy retry counted)");
             repeat (40) @(posedge clk);
             chk(n_done == 32'd10, "C-3.3 all ten completed");
         end
 
-        // C-5: slave port write, 2 beats
+        
         slv_write(64'h8000, 4'h9, 2, 3'd4);
         chk(tb_slv_wbeats() == 2 && n_slv_recv == 2, "C-5.1 two beats routed (per-beat callback)");
         chk(s_bresp == 2'b00, "C-5.2 slave B response OKAY");
 
-        // C-6: slave port DECERR propagates
+        
         slv_write(64'hDEAD0000, 4'hA, 1, 3'd4);
         chk(s_bresp == 2'b11 && n_slv_miss == 1, "C-6.1 DECERR propagates to BRESP and is counted");
 
-        // C-7: interrupt OUT is an active-high LEVEL
+        
         tb_set_irq(1); repeat (3) @(posedge clk);
         chk(irq_out == 1'b1, "C-7.1 irq_out rises");
         repeat (5) @(posedge clk);
@@ -206,7 +194,7 @@ module tb_axi_dpi_bridge;
         tb_set_irq(0); repeat (3) @(posedge clk);
         chk(irq_out == 1'b0, "C-7.3 irq_out falls when serviced");
 
-        // C-9: interrupt IN (DUT -> model) is pushed on VALUE CHANGE only
+        
         begin integer ev0;
             ev0 = tb_irq_in_events();
             irq_in = 1'b1; repeat (3) @(posedge clk);
@@ -219,7 +207,7 @@ module tb_axi_dpi_bridge;
                 "C-9.3 irq_in fall pushed once (level back to 0)");
         end
 
-        // C-8
+        
         chk(n_rerr == 0, "C-8.0 no spurious completion errors");
 
         $display("\n  PASS = %0d\n  FAIL = %0d", pass, fail);
