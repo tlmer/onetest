@@ -8,17 +8,34 @@ port (`client0`, `client1`, `trgt1`, `dbi`), not AXI.
 
 | File | Role |
 |---|---|
-| `priv_port.veo` | Verilog instantiation template for the adapter pin bundle |
-| `priv_pins.sv` | HDL-side pin bundle for the shipped configuration |
-| `priv_bridge.h` | SystemC glue: one `sc_out`/`sc_in` per contract field |
-| `priv_bind.inc` | Intermediate `sc_signal` table and double binding |
-| `priv_pins.map` | Field-to-pin map used to generate the three files above |
+| `priv_params.h` | Field widths `W_<field>` and derived bit offsets `O_<field>` |
+| `priv_port.veo` | Verilog instantiation template with parameter overrides |
+| `priv_pins.sv` | HDL-side pin bundle; every multi-bit width is a module parameter |
+| `priv_bridge.h` | SystemC glue: `priv_bridge_t<P>`, one port per contract field |
+| `priv_bind.inc` | Intermediate `sc_signal` table: `priv_bind_t<P>` + double binding |
+| `priv_pins.map` | VCS `-sc_portmap` for the default parameter values |
 | `priv_pins_real.map` | Field map for the real-RTL co-simulation instance |
 
-The shipped files correspond to the DWC configuration used by the acceptance
-run (136 fields, 1237 bits). Different DWC macro settings change the field
-list, payload width and number of functions; regenerate the adapter for each
-customer configuration.
+## Parameters
+
+All configuration-dependent widths are parameters; nothing is tied to the
+design used for the acceptance run.
+
+* **SystemC** - `priv_params.h` defines `W_<field>` for every contract field
+  and derives `O_<field>` offsets from them. `priv_bridge_t<P>` and
+  `priv_bind_t<P>` are templates over that parameter struct. The aliases
+  `priv_bridge` / `priv_bind` select the shipped defaults. For a different DWC
+  configuration, supply a parameter struct with your widths (the offsets are
+  computed automatically) and instantiate the templates with it.
+* **Verilog** - `priv_dut #(...)` exposes one parameter per multi-bit field.
+  Defaults match the DWC configuration used to generate the adapter;
+  `priv_port.veo` shows how to override them.
+* **VCS portmap** - `priv_pins.map` is per-configuration by nature (a portmap
+  file cannot carry Verilog parameters). Regenerate it when the widths change.
+
+The shipped field set is 136 fields / 1237 bits. DWC macro settings also
+change the number of functions and the field list itself; in that case the
+adapter must be regenerated with the new top-level port table.
 
 ## Wiring
 

@@ -154,10 +154,18 @@ The application side of the DWC private port is generated from two inputs:
 
 Generated pieces, delivered as a reference in `rtl_bridge/`:
 
-* `priv_pins.sv` -- HDL pin bundle (`input`/`output` declarations)
-* `priv_bridge.h` -- SystemC glue: one port per contract field
-* `priv_bind.inc` -- intermediate `sc_signal` table and double binding
-* `priv_port.veo` -- Verilog instantiation template
+* `priv_params.h` -- `W_<field>` width constants and derived `O_<field>` bit
+  offsets; the single source of the configuration-dependent widths
+* `priv_pins.sv` -- HDL pin bundle; every multi-bit width is a module parameter
+* `priv_bridge.h` -- SystemC glue: `priv_bridge_t<P>`, one port per field
+* `priv_bind.inc` -- intermediate `sc_signal` table: `priv_bind_t<P>` and binding
+* `priv_port.veo` -- Verilog instantiation template with parameter overrides
+
+All widths are parameters, matching the DWC RTL style. For a different
+customer configuration, provide a parameter struct with your `W_*` values (the
+`O_*` offsets are derived) and instantiate the templates with it; on the
+Verilog side override the module parameters shown in `priv_port.veo`. The
+`-sc_portmap` file is per-configuration and must be regenerated.
 
 Key protocol rules:
 

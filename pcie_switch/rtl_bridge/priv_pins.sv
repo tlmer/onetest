@@ -1,66 +1,149 @@
 
 
-module priv_dut (
+module priv_dut #(
+    parameter integer CLIENT0_TLP_BYTE_EN_W = 8,
+    parameter integer CLIENT0_REMOTE_REQ_ID_W = 16,
+    parameter integer CLIENT0_CPL_BYTE_CNT_W = 12,
+    parameter integer CLIENT0_TLP_TC_W = 3,
+    parameter integer CLIENT0_TLP_ATTR_W = 2,
+    parameter integer CLIENT0_CPL_STATUS_W = 3,
+    parameter integer CLIENT0_TLP_FMT_W = 2,
+    parameter integer CLIENT0_TLP_TYPE_W = 5,
+    parameter integer CLIENT0_TLP_BYTE_LEN_W = 13,
+    parameter integer CLIENT0_TLP_ADDR_W = 64,
+    parameter integer CLIENT0_TLP_TID_W = 8,
+    parameter integer CLIENT0_TLP_DATA_W = 64,
+    parameter integer CLIENT0_TLP_FUNC_NUM_W = 3,
+    parameter integer CLIENT0_APP_DEV_ID_W = 16,
+    parameter integer CLIENT0_HDR_RSVD_W = 15,
+    parameter integer CLIENT1_TLP_BYTE_EN_W = 8,
+    parameter integer CLIENT1_REMOTE_REQ_ID_W = 16,
+    parameter integer CLIENT1_CPL_BYTE_CNT_W = 12,
+    parameter integer CLIENT1_TLP_TC_W = 3,
+    parameter integer CLIENT1_TLP_ATTR_W = 2,
+    parameter integer CLIENT1_CPL_STATUS_W = 3,
+    parameter integer CLIENT1_TLP_FMT_W = 2,
+    parameter integer CLIENT1_TLP_TYPE_W = 5,
+    parameter integer CLIENT1_TLP_BYTE_LEN_W = 13,
+    parameter integer CLIENT1_TLP_ADDR_W = 64,
+    parameter integer CLIENT1_TLP_TID_W = 8,
+    parameter integer CLIENT1_TLP_DATA_W = 64,
+    parameter integer CLIENT1_TLP_FUNC_NUM_W = 3,
+    parameter integer CLIENT1_APP_DEV_ID_W = 16,
+    parameter integer CLIENT1_HDR_RSVD_W = 15,
+    parameter integer RADM_TRGT1_FMT_W = 2,
+    parameter integer RADM_TRGT1_TYPE_W = 5,
+    parameter integer RADM_TRGT1_TC_W = 3,
+    parameter integer RADM_TRGT1_ATTR_W = 2,
+    parameter integer RADM_TRGT1_REQID_W = 16,
+    parameter integer RADM_TRGT1_TAG_W = 8,
+    parameter integer RADM_TRGT1_FUNC_NUM_W = 3,
+    parameter integer RADM_TRGT1_DW_LEN_W = 10,
+    parameter integer RADM_TRGT1_FIRST_BE_W = 4,
+    parameter integer RADM_TRGT1_LAST_BE_W = 4,
+    parameter integer RADM_TRGT1_ADDR_W = 64,
+    parameter integer RADM_TRGT1_CMPLTR_ID_W = 16,
+    parameter integer RADM_TRGT1_BYTE_CNT_W = 12,
+    parameter integer RADM_TRGT1_CPL_STATUS_W = 3,
+    parameter integer RADM_TRGT1_RSVD_W = 15,
+    parameter integer RADM_TRGT1_DATA_W = 64,
+    parameter integer RADM_TRGT1_DWEN_W = 2,
+    parameter integer RADM_TRGT1_HDR_UPPR_BYTES_W = 64,
+    parameter integer RADM_TRGT1_VC_W = 3,
+    parameter integer TRGT1_RADM_PKT_HALT_W = 3,
+    parameter integer RADM_GRANT_TLP_TYPE_W = 3,
+    parameter integer RADM_BYPASS_DATA_W = 64,
+    parameter integer RADM_BYPASS_DWEN_W = 2,
+    parameter integer RADM_BYPASS_FMT_W = 2,
+    parameter integer RADM_BYPASS_TYPE_W = 5,
+    parameter integer RADM_BYPASS_TC_W = 3,
+    parameter integer RADM_BYPASS_ATTR_W = 2,
+    parameter integer RADM_BYPASS_REQID_W = 16,
+    parameter integer RADM_BYPASS_TAG_W = 8,
+    parameter integer RADM_BYPASS_FUNC_NUM_W = 3,
+    parameter integer RADM_BYPASS_DW_LEN_W = 10,
+    parameter integer RADM_BYPASS_FIRST_BE_W = 4,
+    parameter integer RADM_BYPASS_LAST_BE_W = 4,
+    parameter integer RADM_BYPASS_ADDR_W = 64,
+    parameter integer RADM_BYPASS_CMPLTR_ID_W = 16,
+    parameter integer RADM_BYPASS_BYTE_CNT_W = 12,
+    parameter integer RADM_BYPASS_CPL_STATUS_W = 3,
+    parameter integer RADM_BYPASS_RSVD_W = 15,
+    parameter integer DBI_ADDR_W = 32,
+    parameter integer DBI_DIN_W = 32,
+    parameter integer DBI_WR_W = 4,
+    parameter integer LBC_DBI_DOUT_W = 32,
+    parameter integer VEN_MSI_FUNC_NUM_W = 3,
+    parameter integer VEN_MSI_TC_W = 3,
+    parameter integer VEN_MSI_VECTOR_W = 5,
+    parameter integer CFG_PBUS_NUM_W = 8,
+    parameter integer CFG_PBUS_DEV_NUM_W = 5,
+    parameter integer CFG_2NDBUS_NUM_W = 8,
+    parameter integer CFG_SUBBUS_NUM_W = 8,
+    parameter integer CFG_MEM_BASE_W = 16,
+    parameter integer CFG_MEM_LIMIT_W = 16,
+    parameter integer DEVICE_TYPE_W = 4
+) (
     input  wire clk,
     input  wire rst_n,
     input  wire client0_addr_align_en,
-    input  wire [7:0] client0_tlp_byte_en,
-    input  wire [15:0] client0_remote_req_id,
-    input  wire [11:0] client0_cpl_byte_cnt,
-    input  wire [2:0] client0_tlp_tc,
-    input  wire [1:0] client0_tlp_attr,
-    input  wire [2:0] client0_cpl_status,
+    input  wire [CLIENT0_TLP_BYTE_EN_W-1:0] client0_tlp_byte_en,
+    input  wire [CLIENT0_REMOTE_REQ_ID_W-1:0] client0_remote_req_id,
+    input  wire [CLIENT0_CPL_BYTE_CNT_W-1:0] client0_cpl_byte_cnt,
+    input  wire [CLIENT0_TLP_TC_W-1:0] client0_tlp_tc,
+    input  wire [CLIENT0_TLP_ATTR_W-1:0] client0_tlp_attr,
+    input  wire [CLIENT0_CPL_STATUS_W-1:0] client0_cpl_status,
     input  wire client0_cpl_bcm,
     input  wire client0_tlp_dv,
     input  wire client0_tlp_eot,
     input  wire client0_tlp_bad_eot,
     input  wire client0_tlp_hv,
-    input  wire [1:0] client0_tlp_fmt,
-    input  wire [4:0] client0_tlp_type,
+    input  wire [CLIENT0_TLP_FMT_W-1:0] client0_tlp_fmt,
+    input  wire [CLIENT0_TLP_TYPE_W-1:0] client0_tlp_type,
     input  wire client0_tlp_td,
     input  wire client0_tlp_ep,
-    input  wire [12:0] client0_tlp_byte_len,
-    input  wire [63:0] client0_tlp_addr,
-    input  wire [7:0] client0_tlp_tid,
-    input  wire [63:0] client0_tlp_data,
-    input  wire [2:0] client0_tlp_func_num,
-    input  wire [15:0] client0_app_dev_id,
-    input  wire [14:0] client0_hdr_rsvd,
+    input  wire [CLIENT0_TLP_BYTE_LEN_W-1:0] client0_tlp_byte_len,
+    input  wire [CLIENT0_TLP_ADDR_W-1:0] client0_tlp_addr,
+    input  wire [CLIENT0_TLP_TID_W-1:0] client0_tlp_tid,
+    input  wire [CLIENT0_TLP_DATA_W-1:0] client0_tlp_data,
+    input  wire [CLIENT0_TLP_FUNC_NUM_W-1:0] client0_tlp_func_num,
+    input  wire [CLIENT0_APP_DEV_ID_W-1:0] client0_app_dev_id,
+    input  wire [CLIENT0_HDR_RSVD_W-1:0] client0_hdr_rsvd,
     input  wire client1_addr_align_en,
-    input  wire [7:0] client1_tlp_byte_en,
-    input  wire [15:0] client1_remote_req_id,
-    input  wire [11:0] client1_cpl_byte_cnt,
-    input  wire [2:0] client1_tlp_tc,
-    input  wire [1:0] client1_tlp_attr,
-    input  wire [2:0] client1_cpl_status,
+    input  wire [CLIENT1_TLP_BYTE_EN_W-1:0] client1_tlp_byte_en,
+    input  wire [CLIENT1_REMOTE_REQ_ID_W-1:0] client1_remote_req_id,
+    input  wire [CLIENT1_CPL_BYTE_CNT_W-1:0] client1_cpl_byte_cnt,
+    input  wire [CLIENT1_TLP_TC_W-1:0] client1_tlp_tc,
+    input  wire [CLIENT1_TLP_ATTR_W-1:0] client1_tlp_attr,
+    input  wire [CLIENT1_CPL_STATUS_W-1:0] client1_cpl_status,
     input  wire client1_cpl_bcm,
     input  wire client1_tlp_dv,
     input  wire client1_tlp_eot,
     input  wire client1_tlp_bad_eot,
     input  wire client1_tlp_hv,
-    input  wire [1:0] client1_tlp_fmt,
-    input  wire [4:0] client1_tlp_type,
+    input  wire [CLIENT1_TLP_FMT_W-1:0] client1_tlp_fmt,
+    input  wire [CLIENT1_TLP_TYPE_W-1:0] client1_tlp_type,
     input  wire client1_tlp_td,
     input  wire client1_tlp_ep,
-    input  wire [12:0] client1_tlp_byte_len,
-    input  wire [63:0] client1_tlp_addr,
-    input  wire [7:0] client1_tlp_tid,
-    input  wire [63:0] client1_tlp_data,
-    input  wire [2:0] client1_tlp_func_num,
-    input  wire [15:0] client1_app_dev_id,
-    input  wire [14:0] client1_hdr_rsvd,
+    input  wire [CLIENT1_TLP_BYTE_LEN_W-1:0] client1_tlp_byte_len,
+    input  wire [CLIENT1_TLP_ADDR_W-1:0] client1_tlp_addr,
+    input  wire [CLIENT1_TLP_TID_W-1:0] client1_tlp_tid,
+    input  wire [CLIENT1_TLP_DATA_W-1:0] client1_tlp_data,
+    input  wire [CLIENT1_TLP_FUNC_NUM_W-1:0] client1_tlp_func_num,
+    input  wire [CLIENT1_APP_DEV_ID_W-1:0] client1_app_dev_id,
+    input  wire [CLIENT1_HDR_RSVD_W-1:0] client1_hdr_rsvd,
     input  wire trgt1_radm_halt,
-    input  wire [2:0] trgt1_radm_pkt_halt,
-    input  wire [31:0] dbi_addr,
-    input  wire [31:0] dbi_din,
+    input  wire [TRGT1_RADM_PKT_HALT_W-1:0] trgt1_radm_pkt_halt,
+    input  wire [DBI_ADDR_W-1:0] dbi_addr,
+    input  wire [DBI_DIN_W-1:0] dbi_din,
     input  wire dbi_cs,
     input  wire dbi_cs2,
-    input  wire [3:0] dbi_wr,
+    input  wire [DBI_WR_W-1:0] dbi_wr,
     input  wire ven_msi_req,
-    input  wire [2:0] ven_msi_func_num,
-    input  wire [2:0] ven_msi_tc,
-    input  wire [4:0] ven_msi_vector,
-    input  wire [3:0] device_type,
+    input  wire [VEN_MSI_FUNC_NUM_W-1:0] ven_msi_func_num,
+    input  wire [VEN_MSI_TC_W-1:0] ven_msi_tc,
+    input  wire [VEN_MSI_VECTOR_W-1:0] ven_msi_vector,
+    input  wire [DEVICE_TYPE_W-1:0] device_type,
     input  wire xal_xmt_cpl_ca,
     input  wire xal_rcvd_cpl_ca,
     input  wire xal_rcvd_cpl_ur,
@@ -72,67 +155,67 @@ module priv_dut (
     output wire radm_trgt1_tlp_abort,
     output wire radm_trgt1_dllp_abort,
     output wire radm_trgt1_ecrc_err,
-    output wire [1:0] radm_trgt1_fmt,
-    output wire [4:0] radm_trgt1_type,
-    output wire [2:0] radm_trgt1_tc,
-    output wire [1:0] radm_trgt1_attr,
-    output wire [15:0] radm_trgt1_reqid,
-    output wire [7:0] radm_trgt1_tag,
-    output wire [2:0] radm_trgt1_func_num,
+    output wire [RADM_TRGT1_FMT_W-1:0] radm_trgt1_fmt,
+    output wire [RADM_TRGT1_TYPE_W-1:0] radm_trgt1_type,
+    output wire [RADM_TRGT1_TC_W-1:0] radm_trgt1_tc,
+    output wire [RADM_TRGT1_ATTR_W-1:0] radm_trgt1_attr,
+    output wire [RADM_TRGT1_REQID_W-1:0] radm_trgt1_reqid,
+    output wire [RADM_TRGT1_TAG_W-1:0] radm_trgt1_tag,
+    output wire [RADM_TRGT1_FUNC_NUM_W-1:0] radm_trgt1_func_num,
     output wire radm_trgt1_td,
     output wire radm_trgt1_poisoned,
-    output wire [9:0] radm_trgt1_dw_len,
-    output wire [3:0] radm_trgt1_first_be,
-    output wire [3:0] radm_trgt1_last_be,
-    output wire [63:0] radm_trgt1_addr,
+    output wire [RADM_TRGT1_DW_LEN_W-1:0] radm_trgt1_dw_len,
+    output wire [RADM_TRGT1_FIRST_BE_W-1:0] radm_trgt1_first_be,
+    output wire [RADM_TRGT1_LAST_BE_W-1:0] radm_trgt1_last_be,
+    output wire [RADM_TRGT1_ADDR_W-1:0] radm_trgt1_addr,
     output wire radm_trgt1_bcm,
     output wire radm_trgt1_cpl_last,
-    output wire [15:0] radm_trgt1_cmpltr_id,
-    output wire [11:0] radm_trgt1_byte_cnt,
-    output wire [2:0] radm_trgt1_cpl_status,
-    output wire [14:0] radm_trgt1_rsvd,
-    output wire [63:0] radm_trgt1_data,
-    output wire [1:0] radm_trgt1_dwen,
-    output wire [63:0] radm_trgt1_hdr_uppr_bytes,
-    output wire [2:0] radm_trgt1_vc,
-    output wire [2:0] radm_grant_tlp_type,
-    output wire [63:0] radm_bypass_data,
-    output wire [1:0] radm_bypass_dwen,
+    output wire [RADM_TRGT1_CMPLTR_ID_W-1:0] radm_trgt1_cmpltr_id,
+    output wire [RADM_TRGT1_BYTE_CNT_W-1:0] radm_trgt1_byte_cnt,
+    output wire [RADM_TRGT1_CPL_STATUS_W-1:0] radm_trgt1_cpl_status,
+    output wire [RADM_TRGT1_RSVD_W-1:0] radm_trgt1_rsvd,
+    output wire [RADM_TRGT1_DATA_W-1:0] radm_trgt1_data,
+    output wire [RADM_TRGT1_DWEN_W-1:0] radm_trgt1_dwen,
+    output wire [RADM_TRGT1_HDR_UPPR_BYTES_W-1:0] radm_trgt1_hdr_uppr_bytes,
+    output wire [RADM_TRGT1_VC_W-1:0] radm_trgt1_vc,
+    output wire [RADM_GRANT_TLP_TYPE_W-1:0] radm_grant_tlp_type,
+    output wire [RADM_BYPASS_DATA_W-1:0] radm_bypass_data,
+    output wire [RADM_BYPASS_DWEN_W-1:0] radm_bypass_dwen,
     output wire radm_bypass_dv,
     output wire radm_bypass_hv,
     output wire radm_bypass_eot,
     output wire radm_bypass_tlp_abort,
     output wire radm_bypass_dllp_abort,
     output wire radm_bypass_ecrc_err,
-    output wire [1:0] radm_bypass_fmt,
-    output wire [4:0] radm_bypass_type,
-    output wire [2:0] radm_bypass_tc,
-    output wire [1:0] radm_bypass_attr,
-    output wire [15:0] radm_bypass_reqid,
-    output wire [7:0] radm_bypass_tag,
-    output wire [2:0] radm_bypass_func_num,
+    output wire [RADM_BYPASS_FMT_W-1:0] radm_bypass_fmt,
+    output wire [RADM_BYPASS_TYPE_W-1:0] radm_bypass_type,
+    output wire [RADM_BYPASS_TC_W-1:0] radm_bypass_tc,
+    output wire [RADM_BYPASS_ATTR_W-1:0] radm_bypass_attr,
+    output wire [RADM_BYPASS_REQID_W-1:0] radm_bypass_reqid,
+    output wire [RADM_BYPASS_TAG_W-1:0] radm_bypass_tag,
+    output wire [RADM_BYPASS_FUNC_NUM_W-1:0] radm_bypass_func_num,
     output wire radm_bypass_td,
     output wire radm_bypass_poisoned,
-    output wire [9:0] radm_bypass_dw_len,
-    output wire [3:0] radm_bypass_first_be,
-    output wire [3:0] radm_bypass_last_be,
-    output wire [63:0] radm_bypass_addr,
+    output wire [RADM_BYPASS_DW_LEN_W-1:0] radm_bypass_dw_len,
+    output wire [RADM_BYPASS_FIRST_BE_W-1:0] radm_bypass_first_be,
+    output wire [RADM_BYPASS_LAST_BE_W-1:0] radm_bypass_last_be,
+    output wire [RADM_BYPASS_ADDR_W-1:0] radm_bypass_addr,
     output wire radm_bypass_bcm,
     output wire radm_bypass_cpl_last,
-    output wire [15:0] radm_bypass_cmpltr_id,
-    output wire [11:0] radm_bypass_byte_cnt,
-    output wire [2:0] radm_bypass_cpl_status,
-    output wire [14:0] radm_bypass_rsvd,
+    output wire [RADM_BYPASS_CMPLTR_ID_W-1:0] radm_bypass_cmpltr_id,
+    output wire [RADM_BYPASS_BYTE_CNT_W-1:0] radm_bypass_byte_cnt,
+    output wire [RADM_BYPASS_CPL_STATUS_W-1:0] radm_bypass_cpl_status,
+    output wire [RADM_BYPASS_RSVD_W-1:0] radm_bypass_rsvd,
     output wire lbc_dbi_ack,
-    output wire [31:0] lbc_dbi_dout,
+    output wire [LBC_DBI_DOUT_W-1:0] lbc_dbi_dout,
     output wire ven_msi_grant,
     output wire cfg_msi_en,
-    output wire [7:0] cfg_pbus_num,
-    output wire [4:0] cfg_pbus_dev_num,
-    output wire [7:0] cfg_2ndbus_num,
-    output wire [7:0] cfg_subbus_num,
-    output wire [15:0] cfg_mem_base,
-    output wire [15:0] cfg_mem_limit,
+    output wire [CFG_PBUS_NUM_W-1:0] cfg_pbus_num,
+    output wire [CFG_PBUS_DEV_NUM_W-1:0] cfg_pbus_dev_num,
+    output wire [CFG_2NDBUS_NUM_W-1:0] cfg_2ndbus_num,
+    output wire [CFG_SUBBUS_NUM_W-1:0] cfg_subbus_num,
+    output wire [CFG_MEM_BASE_W-1:0] cfg_mem_base,
+    output wire [CFG_MEM_LIMIT_W-1:0] cfg_mem_limit,
     output wire upstream_port,
     output wire rdlh_link_up,
     output wire cfg_bridge_crs_en,
@@ -142,17 +225,17 @@ module priv_dut (
 );
 
     
-    localparam integer CDWB = 64;   
-    localparam integer TDWB = 64;   
-    localparam integer ADWB = 64;   
-    localparam integer TGW  = 8;   
-    localparam integer RQW  = 16;   
-    localparam integer FNW  = 3;   
-    localparam integer BEW  = 8;   
-    localparam integer BLW  = 13;   
-    localparam integer DWW  = 10;   
-    localparam integer BCW  = 12;   
-    localparam integer RSW  = 15;   
+    localparam integer CDWB = CLIENT0_TLP_DATA_W;   
+    localparam integer TDWB = RADM_TRGT1_DATA_W;   
+    localparam integer ADWB = CLIENT0_TLP_ADDR_W;   
+    localparam integer TGW  = CLIENT0_TLP_TID_W;   
+    localparam integer RQW  = CLIENT0_APP_DEV_ID_W;   
+    localparam integer FNW  = CLIENT0_TLP_FUNC_NUM_W;   
+    localparam integer BEW  = CLIENT0_TLP_BYTE_EN_W;   
+    localparam integer BLW  = CLIENT0_TLP_BYTE_LEN_W;   
+    localparam integer DWW  = RADM_TRGT1_DW_LEN_W;   
+    localparam integer BCW  = RADM_TRGT1_BYTE_CNT_W;   
+    localparam integer RSW  = RADM_TRGT1_RSVD_W;   
 
     localparam [4:0] T_CFG0 = 5'h04, T_CFG1 = 5'h05, T_CPL = 5'ha, T_MEM = 5'h00;
     localparam [15:0] EP_VID = 16'h10EE, EP_DID = 16'h9024, EP_BDF = 16'h0100;
@@ -179,6 +262,14 @@ module priv_dut (
 
     
     reg rx_active, disp_pend; reg [3:0] rx_beat; reg [511:0] rx_pay;
+    
+    
+    reg  rx_ch1;
+    wire hv_any  = client0_tlp_hv | client1_tlp_hv;
+    wire hv_sel  = rx_ch1 ? client1_tlp_hv  : client0_tlp_hv;
+    wire dv_sel  = rx_ch1 ? client1_tlp_dv  : client0_tlp_dv;
+    wire eot_sel = rx_ch1 ? client1_tlp_eot : client0_tlp_eot;
+    wire [CDWB-1:0] data_sel = rx_ch1 ? client1_tlp_data : client0_tlp_data;
     reg [4:0] h_type; reg [1:0] h_fmt; reg [ADWB-1:0] h_addr;
     reg [TGW-1:0] h_tag; reg [FNW-1:0] h_fn; reg [RQW-1:0] h_reqid;
     reg [BLW-1:0] h_blen; reg [BEW-1:0] h_be;
@@ -420,27 +511,33 @@ module priv_dut (
             end
             
             if (rx_active) begin
-                if (client0_tlp_dv) begin
+                if (dv_sel) begin
                     dbg_beats <= dbg_beats + 16'd1;
-                    if (rx_beat < 4'd8) rx_pay[rx_beat*CDWB +: CDWB] <= client0_tlp_data;
+                    if (rx_beat < 4'd8) rx_pay[rx_beat*CDWB +: CDWB] <= data_sel;
                     rx_beat <= rx_beat + 4'd1;
                 end
-                if (client0_tlp_hv) dbg_errs <= dbg_errs + 4'd1;              
-                if (client0_tlp_eot) begin
+                if (hv_sel) dbg_errs <= dbg_errs + 4'd1;              
+                if (eot_sel) begin
                     rx_active <= 1'b0; disp_pend <= 1'b1;
                     dbg_frames <= dbg_frames + 16'd1;
                 end
-            end else if (client0_tlp_hv) begin
+            end else if (hv_any) begin
                 rx_active <= 1'b1; rx_beat <= 4'd0; rx_pay <= 512'h0;
-                h_type <= client0_tlp_type; h_fmt <= client0_tlp_fmt; h_addr <= client0_tlp_addr;
-                h_tag <= client0_tlp_tid; h_fn <= client0_tlp_func_num; h_reqid <= client0_app_dev_id;
-                h_blen <= client0_tlp_byte_len; h_be <= client0_tlp_byte_en;
-                if (client0_tlp_dv) begin
+                rx_ch1 <= client1_tlp_hv;
+                h_type <= client1_tlp_hv ? client1_tlp_type : client0_tlp_type;
+                h_fmt  <= client1_tlp_hv ? client1_tlp_fmt  : client0_tlp_fmt;
+                h_addr <= client1_tlp_hv ? client1_tlp_addr : client0_tlp_addr;
+                h_tag  <= client1_tlp_hv ? client1_tlp_tid  : client0_tlp_tid;
+                h_fn   <= client1_tlp_hv ? client1_tlp_func_num : client0_tlp_func_num;
+                h_reqid<= client1_tlp_hv ? client1_app_dev_id : client0_app_dev_id;
+                h_blen <= client1_tlp_hv ? client1_tlp_byte_len : client0_tlp_byte_len;
+                h_be   <= client1_tlp_hv ? client1_tlp_byte_en : client0_tlp_byte_en;
+                if (client1_tlp_hv ? client1_tlp_dv : client0_tlp_dv) begin
                     dbg_beats <= dbg_beats + 16'd1;
-                    rx_pay[0 +: CDWB] <= client0_tlp_data;
+                    rx_pay[0 +: CDWB] <= client1_tlp_hv ? client1_tlp_data : client0_tlp_data;
                     rx_beat <= 4'd1;
                 end
-                if (client0_tlp_eot) begin
+                if (client1_tlp_hv ? client1_tlp_eot : client0_tlp_eot) begin
                     rx_active <= 1'b0; disp_pend <= 1'b1;
                     dbg_frames <= dbg_frames + 16'd1;
                 end
