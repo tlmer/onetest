@@ -8,6 +8,22 @@ struct CoreCfgParam { const char* name; long long value; int line; };
 struct CoreCfgEntry { const char* cfg; const char* file; int n; const CoreCfgParam* p; };
 
 static const CoreCfgParam kCfg_config_cxl_old[] = {
+    {"TRGT_DATA_WD", 256LL, 23050},
+    {"CX_TAG_SIZE", 8LL, 14548},
+    {"FLT_Q_ADDR_WIDTH", 64LL, 5650},
+    {"FLT_Q_ATTR_WIDTH", 2LL, 10574},
+    {"CX_NVC", 1LL, 4726},
+    {"CX_NVC_XALI_EXPANSION", 1LL, 5823},
+    {"CX_NFUNC", 1LL, 4316},
+    {"CX_NFUNC_WD", 3LL, 4395},
+    {"CX_NHQ", 2LL, 4197},
+    {"CX_NW", 8LL, 4005},
+    {"CX_BUSNUM_WD", 8LL, 4700},
+    {"CX_DEVNUM_WD", 5LL, 4716},
+    {"CX_LBC_NW", 2LL, 8606},
+    {"CX_MSI_NFUNC", 1LL, 4366},
+    {"CX_RADM_NFC_TRGT_INTF", 2LL, 4265},
+    {"CX_NL", 8LL, 3144},
 };
 
 static const CoreCfgParam kCfg_config_ep[] = {
@@ -49,6 +65,22 @@ static const CoreCfgParam kCfg_config_ep_cxl[] = {
 };
 
 static const CoreCfgParam kCfg_config_epx1cxl[] = {
+    {"TRGT_DATA_WD", 256LL, 25098},
+    {"CX_TAG_SIZE", 8LL, 15295},
+    {"FLT_Q_ADDR_WIDTH", 64LL, 5876},
+    {"FLT_Q_ATTR_WIDTH", 2LL, 11280},
+    {"CX_NVC", 1LL, 5171},
+    {"CX_NVC_XALI_EXPANSION", 1LL, 6059},
+    {"CX_NFUNC", 1LL, 4753},
+    {"CX_NFUNC_WD", 3LL, 4832},
+    {"CX_NHQ", 2LL, 4692},
+    {"CX_NW", 8LL, 4528},
+    {"CX_BUSNUM_WD", 8LL, 5149},
+    {"CX_DEVNUM_WD", 5LL, 5157},
+    {"CX_LBC_NW", 2LL, 9037},
+    {"CX_MSI_NFUNC", 1LL, 4803},
+    {"CX_RADM_NFC_TRGT_INTF", 2LL, 5316},
+    {"CX_NL", 4LL, 3489},
 };
 
 static const CoreCfgParam kCfg_config_root3[] = {
@@ -166,10 +198,10 @@ static const CoreCfgParam kCfg_config_sw5x16cxl[] = {
 };
 
 static const CoreCfgEntry kCfgTable[] = {
-    {"config_cxl.old", "config_cxl.old/src/cxl_DWC_pcie_ctl_cc_constants.svh", 0, kCfg_config_cxl_old},
+    {"config_cxl.old", "config_cxl.old/src/cxl_DWC_pcie_ctl_cc_constants.svh", 16, kCfg_config_cxl_old},
     {"config_ep", "config_ep/src/DWC_pcie_ctl_cc_constants.svh", 16, kCfg_config_ep},
     {"config_ep_cxl", "config_ep_cxl/src/DWC_pcie_ctl_cc_constants.svh", 16, kCfg_config_ep_cxl},
-    {"config_epx1cxl", "config_epx1cxl/src/Tiger_DWC_pcie_ctl_cc_constants.svh", 0, kCfg_config_epx1cxl},
+    {"config_epx1cxl", "config_epx1cxl/src/Tiger_DWC_pcie_ctl_cc_constants.svh", 16, kCfg_config_epx1cxl},
     {"config_root3", "config_root3/src/DWC_pcie_ctl_cc_constants.svh", 16, kCfg_config_root3},
     {"config_root_cxl", "config_root_cxl/src/DWC_pcie_ctl_cc_constants.svh", 16, kCfg_config_root_cxl},
     {"config_sw3", "config_sw3/src/DWC_pcie_ctl_cc_constants.svh", 16, kCfg_config_sw3},

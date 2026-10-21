@@ -105,6 +105,8 @@ The switch configuration is held in `pcie_tlm::SwitchCfg` (see
 * `p2p_base` / `p2p_size` -- peer-to-peer window
 * `bc_member` -- broadcast domain membership
 * `mc_mask` -- 16 multicast group membership bits
+* `is_dm` / `dm_role` -- dual-mode port flag and role (0 = EP-facing, 1 = root-facing);
+  the DM RTL itself is customer-supplied and sits behind the same private-port contract
 
 `SwitchCfg` additionally defines the broadcast window (`bc_base`, `bc_size`)
 and the multicast window (`mc_base`, `mc_stride`, 16 groups).
@@ -218,8 +220,8 @@ behavior and are used for acceptance.
 
 * No PHY, DLL, LTSSM, credit management, or equalization: owned by the
   downstream RTL.
-* The enumeration engine is two-level: root -> downstream port -> endpoint.
-  Switch cascading is not implemented yet.
+* The enumeration engine is recursive: a downstream port may attach an endpoint or
+  another switch (nested windows, two-level broadcast/multicast verified).
 * The console covers configuration and routing. End-to-end data transfer,
   live enumeration, MSI delivery and ECRC require the co-simulation top with
   the customer RTL.

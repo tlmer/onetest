@@ -81,6 +81,11 @@ struct PortCfg {
     uint64_t io_base = 0, io_size = 0;
     bool     bc_member = false;             
     uint16_t mc_mask = 0;                   
+    
+    
+    
+    bool     is_dm = false;                 
+    uint8_t  dm_role = 0;                   
 };
 
 struct SwitchCfg {

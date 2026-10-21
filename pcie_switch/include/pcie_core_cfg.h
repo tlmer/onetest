@@ -47,5 +47,6 @@ const CoreCfg& cfg_sw3dn();
 const CoreCfg& cfg_sw3();       
 const CoreCfg& cfg_ep();        
 const CoreCfg& cfg_sw5x16();    
+const CoreCfg& cfg_dmx1_ntb();  
 
 } 

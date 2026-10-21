@@ -34,8 +34,9 @@ quit
 
 ## Features
 
-* N downstream ports (1..32), address-window routing
+* Configurable downstream ports (1..32) plus one dual-mode (DM) port; address-window routing
 * Unicast, multicast (16 groups), broadcast, peer-to-peer, NTB
+* Switch cascading: recursive enumeration with nested downstream windows
 * Type0/Type1 configuration spaces, MSI / MSI-X / INTx
 * No-OS enumeration with Linux-style `[ENUM]` logging
 * Per-port, per-VC egress queues with strict-priority, round-robin and
@@ -48,10 +49,10 @@ quit
 
 PHY, link training and flow control belong to the downstream RTL. This model
 does not expose an AXI4 interface, does not provide a DTS template or an
-example program, and does not yet support switch cascading. See
+example program. See
 `USER_GUIDE.md` section 11 for details.
 
 ## Version
 
-Model 1.0 -- the shipped configuration is recorded in `USER_GUIDE.md`
+Model 1.1 -- the shipped configuration is recorded in `USER_GUIDE.md`
 (section 8) and in the private-port adapter map.
