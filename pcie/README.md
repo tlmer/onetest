@@ -46,7 +46,7 @@ the enumeration itself lives in `drivers/pci/{probe,setup-bus,setup-res,access}.
 | [`include/`](include/)[`lib/`](lib/) | the model's contract headers + prebuilt library |
 | [`smoke/`](smoke/) | smoke bench over the public ABI (56 green / 4 red) |
 | [`dts/`](dts/) | DTS templates: DWC / Xilinx / Altera |
-| [`console/`](console/) | standalone model console (`run all` = 11/11 testcases + coverage) |
+| [`console/`](console/) | standalone model console (`run all` = 11/11 testcases + coverage; `lspci`/`setpci`-compatible utilities) |
 | [`example/`](example/) | smallest runnable example (enumeration -> config read -> DMA route -> MSI) |
 | [`USER_GUIDE.md`](USER_GUIDE.md) | how to build, which ABI to call, how to plug it onto a NoC |
 | [`hal/`](hal/) | the key table above, with each row's `file:line` |

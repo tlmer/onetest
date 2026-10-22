@@ -187,7 +187,7 @@ it without touching the PCIe side.
   (`pcie_tc_coverage_text`, console `cover`).
 * Console: `pcie_model_console_start()` is idempotent; `console/console_main.c`
   is a standalone executable linking only include+lib; commands
-  `help/info/list/run <id|all> [n]/cover/dts <path>/quit`.
+  `help/info/list/run <id|all> [n]/cover/dts <path>/lspci/setpci/quit`.
 
 ## 4e. Model-level TLP semantics (reference layer)
 
@@ -197,6 +197,28 @@ relief, ACS checks, ATS invalidate req/resp and per-VC egress (strict/RR/WRR).
 These mechanisms belong to the DUT/link side and are **not visible over AXI**;
 they are delivered as a reference semantic layer with red/green criteria, not
 as part of the AXI4 contract.
+
+## 4f. lspci / setpci-compatible utilities
+
+`lspci` and `setpci` are **userspace** programs from pciutils, not kernel code.
+Their normal backends (linux-sysfs, linux-proc, intel-conf1) walk a real PCI
+bus through an OS; a no-OS AXI4 model has neither sysfs nor a host bridge, so
+those backends cannot address it. pciutils' one file-based backend (`dump`) is
+**read-only**, which is enough for the stock lspci:
+
+    lspci dump /tmp/pcie.dump                    # console (or pcie_util_dump())
+    /sbin/lspci -F /tmp/pcie.dump -xxx           # stock lspci + config bytes
+
+Writes need the model-native command, which takes the same argument shapes as
+setpci (`-s <bdf>`, `<reg>[.b|.w|.l][=<value>]`); the listing command takes the
+same BDF filter:
+
+    lspci [<bdf>]                                # [[domain:]bus:]dev.fn
+    setpci -s 01:00.0 04.w=0006
+    setpci -s 01:00.0 04.w                       # prints the value
+
+Both are thin wrappers over `pci_bus_read/write_config_*`, i.e. the same
+configuration path enumeration uses (`include/pcie_util.h`).
 
 ## 5. Consistency with Linux
 
@@ -226,7 +248,7 @@ pcie/
 ├─ example/            smallest runnable example
 ├─ dts/                DTS templates (DWC / Xilinx / Altera) -- T1 delivery surface
 ├─ console/            standalone model console (T8; no simulator)
-├─ model/              model sources + 17 internal benches
+├─ model/              model sources + 18 internal benches
 │   └─ tlm/            SystemC/TLM build of the same sources (+ joint bench)
 └─ hal/                IP key table (compatible -> driver/model)
 ```
