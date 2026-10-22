@@ -8,9 +8,9 @@ listed: a chip maker's controller is never licensed out, so it can never be a DU
 | Subclass | Vendor | IP model | Compatible | Status |
 |---|---|---|---|---|
 | rootport | Synopsys | DWC PCIe Root Port | `snps,dw-pcie` | built |
-| ecam | Synopsys | DWC PCIe ECAM | `snps,dw-pcie-ecam` | todo |
-| rootport | Cadence | Cadence PCIe Host (RC) | `cdns,cdns-pcie-host` | todo |
-| rootport | Mobiveil | Mobiveil GPEX-40 PCIe | `mbvl,gpex40-pcie` | todo |
+| ecam | Synopsys | DWC PCIe ECAM | `snps,dw-pcie-ecam` | built |
+| rootport | Cadence | Cadence PCIe Host (RC) | `cdns,cdns-pcie-host` | built |
+| rootport | Mobiveil | Mobiveil GPEX-40 PCIe | `mbvl,gpex40-pcie` | built |
 | rootport | Northwest Logic | NWL PCIe Bridge | `xlnx,nwl-pcie-2.11` | built |
 | rootport | Xilinx *(directed exception)* | AXI PCIe host bridge | `xlnx,axi-pcie-host-1.00.a` | built |
 | rootport | Xilinx *(directed exception)* | Versal CPM / CPM5 PCIe host | `xlnx,versal-cpm-host-1.00`, `xlnx,versal-cpm5-host` | built |
