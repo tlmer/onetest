@@ -1,0 +1,5 @@
+*.o
+*.a
+/model/tb/tb_hdd_scsi
+*.bak*
+build/

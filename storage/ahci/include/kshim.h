@@ -33,6 +33,7 @@ typedef uint64_t             dma_addr_t;
 #define K_EINVAL       22
 #define K_ENODEV       19
 #define K_ENOTTY       25
+#define K_ENOENT        2
 
 struct k_backend {
     const char *name;

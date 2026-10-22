@@ -41,8 +41,15 @@ Delivery directories:
 | [`ahci/`](ahci/) | the built AHCI model (DWC + CEVA behind one ops layer) + smoke test |
 | [`ufs/`](ufs/) | the built UFS model (DWC G210 + Cadence behind one ops layer) + smoke test |
 | [`sas/`](sas/) | the built SAS Linux-proxy model (hisi_sas v3) + AXI4 bridge + DTS template + smoke/example |
+| [`sas_hdd/`](sas_hdd/) | **SAS HDD target TLM companion** (SystemC, SSP target + SCSI command set, self-checking 25-criteria bench) -- imported from the standalone SAS HDD package |
 | [`hal/`](hal/) | the key table above, with each row's `file:line` |
 | [`class/`](class/) | the class layer: the unified storage ioctl (SCSI CDB / error recovery / partitions) |
+
+**Device-side companion.**  `sas_hdd/` is the opposite side of `sas/`: a SAS
+disk (SSP target) transaction-level model that pairs with the HBA over the
+frame-level link.  It is a SystemC/TLM deliverable and deliberately not part of
+the host-driver ledger: no `compatible` key selects it, and it does not play a
+Linux host.  Build it standalone with `cd sas_hdd/model && make && sh regress.sh`.
 
 **What "Linux proxy" means here.**  Each model runs the sequence Linux runs:
 registers and link bring-up on the controller side, and the OS-side half above
