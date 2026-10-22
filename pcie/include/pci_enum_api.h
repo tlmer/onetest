@@ -21,6 +21,13 @@ void pcie_model_set_vendor(int v);
 #define PCIE_PROFILE_XLNX_NWL 3
 #define PCIE_PROFILE_XLNX_CPM 4
 #define PCIE_PROFILE_ALTR     5
+#define PCIE_PROFILE_DW_ECAM  6     
+#define PCIE_PROFILE_CDNS     7     
+#define PCIE_PROFILE_MBVL     8     
+#define PCIE_PROFILE_MAX      PCIE_PROFILE_MBVL
+
+#define PCIE_PROFILE_IS_DWC(p)  ((p) <= PCIE_PROFILE_DW_490 || (p) == PCIE_PROFILE_DW_ECAM)
+#define PCIE_PROFILE_IS_VENDOR(p) ((p) >= PCIE_PROFILE_XLNX_AXI && (p) != PCIE_PROFILE_DW_ECAM)
 void pcie_model_set_profile(int p);
 int  pcie_model_profile(void);
 u32  pcie_model_profile_version(void);         

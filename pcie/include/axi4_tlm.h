@@ -14,8 +14,13 @@ extern "C" {
 #define AXI4_TLM_DATA_BYTES   16u                       
 #define AXI4_TLM_DATA_BITS    128u
 #define AXI4_TLM_OUTSTANDING  8u                        
+#define AXI4_TLM_MAX_ID_BITS  8u                        
+#define AXI4_TLM_MAX_OUTSTANDING 64u                    
 #define AXI4_TLM_MAX_BURST    16u                       
 #define AXI4_TLM_MAX_SIZE     4u                        
+
+int  pcie_model_set_axi_params(unsigned id_bits, unsigned outstanding);
+unsigned pcie_axi4_id_slots(void);              
 
 unsigned axi4_tlm_param_id_bits(void);
 unsigned axi4_tlm_param_data_bits(void);
@@ -39,11 +44,12 @@ void axi4_tlm_apply_write(const struct axi4_tlm_beat *b, u64 addr, u8 *dst, unsi
 
 struct axi4_tlm_master {
     const char *name;
-    struct axi4_tlm_beat slot[AXI4_TLM_OUTSTANDING];
-    u8   busy[AXI4_TLM_OUTSTANDING];        
+    unsigned limit;                         
+    struct axi4_tlm_beat slot[AXI4_TLM_MAX_OUTSTANDING];
+    u8   busy[AXI4_TLM_MAX_OUTSTANDING];    
     
 
-    struct axi4_tlm_beat comp[AXI4_TLM_OUTSTANDING];
+    struct axi4_tlm_beat comp[AXI4_TLM_MAX_OUTSTANDING];
     int  comp_n;
     unsigned inflight, submitted, completed, refused;
     unsigned max_inflight;                  
@@ -112,6 +118,11 @@ void *pcie_model_dma_alloc(const char *owner, size_t size, u64 *dma_addr);
 unsigned pcie_model_dma_owner_hits(const char *owner);   
 
 int  pcie_irq_line_level(void);          
+
+#define PCIE_IRQ_MAX_BITS 32u
+int      pcie_model_set_irq_mode(unsigned bits);
+unsigned pcie_model_irq_mode(void);
+u32      pcie_irq_vector_mask(void);      
 void pcie_irq_line_poll(void);           
 void pcie_irq_line_bind(void (*cb)(int level, void *ctx), void *ctx);
 unsigned pcie_irq_line_edges(void);      

@@ -158,6 +158,9 @@ drives its windows:
 | Synopsys DWC 460A/490A | ATU CFG0/CFG1 or ECAM | outbound/inbound iATU |
 | Xilinx AXI / NWL / Versal CPM | **ECAM** | `ranges` + host-DRAM identity (no iATU) |
 | Altera root port | **ECAM** | `ranges` + host-DRAM identity (no iATU) |
+| Cadence PCIe host (RC) | **ECAM** | `ranges` + host-DRAM identity (no iATU) |
+| Mobiveil GPEX-40 | **ECAM** | `ranges` + host-DRAM identity (no iATU) |
+| DWC ECAM | **ECAM** | DWC register view + outbound iATU for MEM |
 
 All profiles answer their own configuration through the model register window.
 Inbound DMA is expressed as PCIe address -> CPU address: iATU DIR_IB for DWC
@@ -188,7 +191,7 @@ it without touching the PCIe side.
   (`pcie_tc_coverage_text`, console `cover`).
 * Console: `pcie_model_console_start()` is idempotent; `console/console_main.c`
   is a standalone executable linking only include+lib; commands
-  `help/info/list/run <id|all> [n]/cover/dts <path>/lspci/setpci/quit`.
+  `help/info/list/run <id|all> [n]/cover/dts <path>/lspci/setpci/irq/perf/quit`.
 
 ## 4e. Model-level TLP semantics (reference layer)
 
@@ -221,6 +224,56 @@ same BDF filter:
 Both are thin wrappers over `pci_bus_read/write_config_*`, i.e. the same
 configuration path enumeration uses (`include/pcie_util.h`).
 
+## 4g. Runtime AXI4 parameters (checklist #2)
+
+The ID width and in-flight limit are **runtime** values, not compile-time
+constants (data width stays 128 bits, the pin contract):
+
+    pcie_model_set_axi_params(3, 2);      /* 3-bit ID (8 ids), 2 in flight */
+    pcie_host_init();                     /* enumeration uses the new values */
+
+or from the DTS (effective on the next init / newly opened pools):
+
+    onetest,axi-id-bits   = <0x3>;
+    onetest,axi-outstanding = <0x2>;
+
+Defaults are 4 bits / 8 outstanding, so existing flows are unchanged.
+`GET_INFO` reports the active values; IDs beyond the configured width are
+rejected with `-EINVAL` (never truncated), and the (limit+1)-th in-flight
+transaction gets `-EAGAIN`.
+
+## 4h. Single-bit or multi-bit interrupt, selected by DT (checklist #3)
+
+    onetest,irq-bits = <0x1>;   /* default: one active-high level line */
+    onetest,irq-bits = <0x4>;   /* one bit per MSI vector */
+
+`pcie_irq_line_level()` always gives the aggregate active-high level;
+`pcie_irq_vector_mask()` gives the pending-vector mask, and `GET_INFO` /
+`GET_STATE` report both `irq_bits` and `irq_vectors`. The AXI bridge exposes
+this as the optional `irq_vec_out[IRQ_VEC_BITS-1:0]` port (default 1 =
+legacy single-bit line). The ISR still clears with a write-1-clear to the MSI
+STATUS register; AER/DPC share vector bit 0.
+
+## 4i. Bandwidth / latency / throughput (checklist #4)
+
+`model/pcie_perf.h` times every PCIe-domain DMA transaction and every
+configuration access, and derives bytes/time, transactions/time and min/avg/max
+latency. Read it through `pcie_model_ioctl(PCIE_IOC_GET_PERF, ...)`, the
+console `perf` command, or `pcie_perf_get()`. `pcie_perf_reset()` starts a new
+window (model init starts one automatically). The time base is the active
+backend: monotonic host clock for pthread, SystemC time for TLM. Scope is the
+model's DMA/config path; it is not a fabric-level bandwidth meter.
+
+## 4j. Linux host-side replay (checklist #11)
+
+`pcie_linux_replay()` executes the same host-side order a Linux kernel uses
+after `pci_host_probe`: scan/describe devices, `pci_enable_device` command bits,
+MSI setup, device raises vector 3, ISR writes 1 to clear, DMA buffer map/write,
+and a verified readback. It emits `[LINUX]` lines matching the kernel's shape
+and returns device/MSI/IRQ/DMA counts. This is observable equivalence without
+an OS; real kernel callbacks and real RTL co-simulation remain external
+conditions.
+
 ## 5. Consistency with Linux
 
 The model is built from the kernel's own work, per function, with a `K:` citation
@@ -249,7 +302,7 @@ pcie/
 ├─ example/            smallest runnable example
 ├─ dts/                DTS templates (DWC / Xilinx / Altera) -- T1 delivery surface
 ├─ console/            standalone model console (T8; no simulator)
-├─ model/              model sources + 18 internal benches
+├─ model/              model sources + 20 internal benches
 │   └─ tlm/            SystemC/TLM build of the same sources (+ joint bench)
 └─ hal/                IP key table (compatible -> driver/model)
 ```

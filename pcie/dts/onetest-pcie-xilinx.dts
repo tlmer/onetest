@@ -24,6 +24,9 @@
 		onetest,atu-pci-base = <0x00000000>;
 		onetest,atu-cpu-size = <0x10000000>;
 		onetest,msi-vectors = <0x8>;
+		onetest,axi-id-bits = <0x4>;
+		onetest,axi-outstanding = <0x8>;
+		onetest,irq-bits = <0x1>;
 		onetest,cfg-mode = <0x1>;
 		onetest,vendor = <0x0>;
 	};

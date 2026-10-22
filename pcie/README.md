@@ -4,7 +4,9 @@ This class models the Linux side of PCIe: the Root Port controller driver plus
 everything Linux does for it (configuration access, enumeration, BAR probing and
 resource assignment, MSI/MSI-X, SR-IOV/ARI, AER, power management, FLR/ReBAR/INTx,
 VC, CRS, DPC, link training, ACS/ATS/PASID, ECRC, inbound ATU, a minimal IOMMU,
-multi-word MSI-X PBA, DTS-driven platform selection, standard testcases, console).  It runs **without a Linux OS** and sits on a **standard AXI4 interface**, so
+multi-word MSI-X PBA, runtime AXI parameters, single/multi-bit interrupts,
+bandwidth/latency/throughput statistics, DTS-driven platform selection, standard
+testcases, console).  It runs **without a Linux OS** and sits on a **standard AXI4 interface**, so
 it drops onto a NoC in front of the controller IP under test.
 
 Organised as **subclass -> IP vendor -> IP model**, plus a key table keyed by the
@@ -45,8 +47,8 @@ the enumeration itself lives in `drivers/pci/{probe,setup-bus,setup-res,access}.
 |---|---|
 | [`include/`](include/)[`lib/`](lib/) | the model's contract headers + prebuilt library |
 | [`smoke/`](smoke/) | smoke bench over the public ABI (56 green / 4 red) |
-| [`dts/`](dts/) | DTS templates: DWC / Xilinx / Altera |
-| [`console/`](console/) | standalone model console (`run all` = 11/11 testcases + coverage; `lspci`/`setpci`-compatible utilities) |
+| [`dts/`](dts/) | DTS templates: DWC / DWC-ECAM / Xilinx / Altera / Cadence / Mobiveil |
+| [`console/`](console/) | standalone model console (`run all` = 11/11 testcases + coverage; `lspci`/`setpci`-compatible utilities; `irq`/`perf`) |
 | [`example/`](example/) | smallest runnable example (enumeration -> config read -> DMA route -> MSI) |
 | [`USER_GUIDE.md`](USER_GUIDE.md) | how to build, which ABI to call, how to plug it onto a NoC |
 | [`hal/`](hal/) | the key table above, with each row's `file:line` |

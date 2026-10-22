@@ -14,6 +14,8 @@ struct pcie_dts_config {
     u64 ecam_base, ecam_size;
     u64 atu_cpu_base, atu_pci_base, atu_cpu_size;
     u32 msi_vectors, cfg_mode, vendor;
+    u32 axi_id_bits, axi_outstanding;   
+    u32 irq_bits;                       
     int profile;          
     int present;
 };

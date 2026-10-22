@@ -5,7 +5,8 @@
     .IDW       (4  ),      
     .DW        (128),      
     .OSLOT     (8  ),      
-    .MAX_BEATS (256)       
+    .MAX_BEATS (256),      
+    .IRQ_VEC_BITS (1)      
   ) u_pcie_bridge (
     .clk         (clk                        ),
     .rst_n       (rst_n                      ),
@@ -41,6 +42,7 @@
     
     
     .irq_out     (irq_out_pcie               ),
+    .irq_vec_out (irq_vec_out_pcie           ),
     .irq_in      (irq_in_pcie                ),
     .n_done      (                           ), .n_busy_retry(               ), .n_rerr( ),
     .n_slv_recv  (                           ), .n_slv_miss  (               )

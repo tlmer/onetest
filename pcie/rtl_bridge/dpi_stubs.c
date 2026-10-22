@@ -81,6 +81,7 @@ void c_pcie_slv_bresp(long long unsigned addr, int resp)
 { (void)addr; (void)resp; }
 
 int c_pcie_irq_level(void) { return irq_level; }
+int c_pcie_irq_vectors(void) { return irq_level ? 1 : 0; }
 
 static int irq_in_lvl = 0, irq_in_ev = 0;
 void c_pcie_irq_set(int level)

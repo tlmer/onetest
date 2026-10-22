@@ -21,6 +21,7 @@ int  c_pcie_slv_rbeat(long long unsigned addr, int size, int beat, int is_last,
                       int id, unsigned char *data);
 void c_pcie_slv_bresp(long long unsigned addr, int resp);
 int  c_pcie_irq_level(void);
+int  c_pcie_irq_vectors(void);
 
 #ifdef __cplusplus
 }

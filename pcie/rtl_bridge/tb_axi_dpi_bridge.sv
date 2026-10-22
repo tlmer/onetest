@@ -29,7 +29,8 @@ module tb_axi_dpi_bridge;
     reg  irq_in = 1'b0;
     wire [31:0] n_done, n_busy_retry, n_rerr, n_slv_recv, n_slv_miss;
 
-    axi_dpi_bridge #(.AW(AW), .IDW(IDW), .DW(DW), .OSLOT(OSLOT)) dut (
+    wire [3:0] irq_vec4;
+    axi_dpi_bridge #(.AW(AW), .IDW(IDW), .DW(DW), .OSLOT(OSLOT), .IRQ_VEC_BITS(4)) dut (
         .clk(clk), .rst_n(rst_n),
         .m_awid(m_awid), .m_awaddr(m_awaddr), .m_awlen(m_awlen), .m_awsize(m_awsize),
         .m_awburst(m_awburst), .m_awvalid(m_awvalid), .m_awready(m_awready),
@@ -47,7 +48,7 @@ module tb_axi_dpi_bridge;
         .s_arburst(s_arburst), .s_arvalid(s_arvalid), .s_arready(s_arready),
         .s_rid(s_rid), .s_rdata(s_rdata), .s_rresp(s_rresp), .s_rlast(s_rlast),
         .s_rvalid(s_rvalid), .s_rready(s_rready),
-        .irq_out(irq_out), .irq_in(irq_in),
+        .irq_out(irq_out), .irq_vec_out(irq_vec4), .irq_in(irq_in),
         .n_done(n_done), .n_busy_retry(n_busy_retry), .n_rerr(n_rerr),
         .n_slv_recv(n_slv_recv), .n_slv_miss(n_slv_miss)
     );

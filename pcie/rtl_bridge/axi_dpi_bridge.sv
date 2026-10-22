@@ -3,6 +3,7 @@
 `timescale 1ns/1ps
 
 module axi_dpi_bridge #(
+    parameter integer IRQ_VEC_BITS = 1,     
     parameter integer AW        = 64,       
     parameter integer IDW       = 4,        
     parameter integer DW        = 128,      
@@ -84,6 +85,9 @@ module axi_dpi_bridge #(
 
     
     output reg              irq_out,
+    
+    
+    output wire [IRQ_VEC_BITS-1:0] irq_vec_out,
     input  wire             irq_in,
 
     
@@ -122,6 +126,7 @@ module axi_dpi_bridge #(
                                                   output bit [DW-1:0] data);
     import "DPI-C" function void c_pcie_slv_bresp(input longint unsigned addr, input int resp);
     import "DPI-C" function int  c_pcie_irq_level();
+    import "DPI-C" function int  c_pcie_irq_vectors();
     import "DPI-C" function void c_pcie_irq_set(input int level);
 
     
@@ -295,6 +300,16 @@ module axi_dpi_bridge #(
         if (!rst_n) irq_out <= 1'b0;
         else        irq_out <= (c_pcie_irq_level() != 0);
     end
+
+    
+    
+    generate
+        if (IRQ_VEC_BITS == 1) begin : g_one
+            assign irq_vec_out = (c_pcie_irq_level() != 0);
+        end else begin : g_vec
+            assign irq_vec_out = c_pcie_irq_vectors();
+        end
+    endgenerate
 
     
     

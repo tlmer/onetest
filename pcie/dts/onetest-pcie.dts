@@ -18,6 +18,9 @@
  *   onetest,atu-pci-base  outbound ATU MEM window, PCI side
  *   onetest,atu-cpu-size  outbound ATU MEM window size
  *   onetest,msi-vectors   MSI vector count (platform parameter pp->num_vectors)
+ *   onetest,axi-id-bits   AXI4 ID width (1..8; default 4)
+ *   onetest,axi-outstanding  AXI4 in-flight limit (1..64; default 8)
+ *   onetest,irq-bits      1 = single-bit level; 2..32 = per-vector mask
  *   onetest,cfg-mode      0 = ATU CFG0/CFG1, 1 = ECAM
  *   onetest,vendor        460 or 490 (controller generation)
  *
@@ -39,6 +42,9 @@
 		onetest,atu-pci-base = <0x00000000>;
 		onetest,atu-cpu-size = <0x10000000>;
 		onetest,msi-vectors = <0x8>;
+		onetest,axi-id-bits = <0x4>;
+		onetest,axi-outstanding = <0x8>;
+		onetest,irq-bits = <0x1>;
 		onetest,cfg-mode = <0x0>;
 		onetest,vendor = <0x1cc>;		/* 460 decimal */
 	};

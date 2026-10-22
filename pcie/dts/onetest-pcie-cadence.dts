@@ -1,0 +1,31 @@
+/dts-v1/;
+
+/*
+ * onetest -- Cadence PCIe host (RC) root template (T1 delivery surface)
+ *
+ * Config path = ECAM. Vendor root ports use `ranges` + host DRAM identity for
+ * DMA (no iATU); the DWC ECAM variant keeps the DWC register view and uses the
+ * outbound ATU for memory windows, exactly like the ATU template.
+ */
+/ {
+	model = "onetest-pcie-cadence-template";
+	compatible = "onetest,test-bench";
+
+	pcie@e0000000 {
+		compatible = "cdns,cdns-pcie-host";
+		reg = <0xe0000000 0x00100000>;		/* ECAM window */
+
+		onetest,dbi-base = <0x00000000>;	/* model register window */
+		onetest,mem-base = <0x80000000>;
+		onetest,ecam-base = <0xe0000000>;
+		onetest,atu-cpu-base = <0x40000000>;
+		onetest,atu-pci-base = <0x00000000>;
+		onetest,atu-cpu-size = <0x10000000>;
+		onetest,msi-vectors = <0x8>;
+		onetest,axi-id-bits = <0x4>;		/* checklist #2 */
+		onetest,axi-outstanding = <0x8>;
+		onetest,irq-bits = <0x1>;		/* checklist #3: 1 = single-bit */
+		onetest,cfg-mode = <0x1>;
+		onetest,vendor = <0x0>;
+	};
+};

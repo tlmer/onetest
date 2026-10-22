@@ -25,7 +25,9 @@ struct pcie_info {
     __u32   outstanding;    
     __u32   irq_line;       
     __s32   error;          
-    __u32   padding[5];
+    __u32   irq_bits;       
+    __u32   irq_vectors;    
+    __u32   padding[3];
 };
 
 struct pcie_enum_dev {
@@ -60,7 +62,9 @@ struct pcie_run_state {
     __u32   route_miss;     
     __u32   delivered;      
     __s32   error;
-    __u32   padding[4];
+    __u32   irq_vectors;    
+    __u32   irq_bits;       
+    __u32   padding[2];
 };
 
 struct pcie_windows_req {
@@ -80,5 +84,20 @@ struct pcie_windows_req {
 #define PCIE_IOC_CFG_WR      _IOW (PCIE_IOC_MAGIC, 4, struct pcie_cfg_io)
 #define PCIE_IOC_GET_STATE   _IOR (PCIE_IOC_MAGIC, 5, struct pcie_run_state)
 #define PCIE_IOC_SET_WINDOWS _IOW (PCIE_IOC_MAGIC, 6, struct pcie_windows_req)
+
+struct pcie_perf_req {
+    __u64   elapsed_ns;
+    __u64   dma_read_txns, dma_write_txns;
+    __u64   dma_read_bytes, dma_write_bytes;
+    __u64   dma_errors;
+    __u64   cfg_reads, cfg_writes;
+    __u64   read_kbps, write_kbps, total_kbps;   
+    __u64   tput_kps;                            
+    __u64   dma_lat_n, dma_lat_min_ns, dma_lat_avg_ns, dma_lat_max_ns;
+    __u64   cfg_lat_n, cfg_lat_min_ns, cfg_lat_avg_ns, cfg_lat_max_ns;
+    __s32   error;
+    __u32   padding;
+};
+#define PCIE_IOC_GET_PERF    _IOR (PCIE_IOC_MAGIC, 7, struct pcie_perf_req)
 
 #endif 
