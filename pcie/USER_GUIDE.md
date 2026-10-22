@@ -31,7 +31,7 @@ cd model/tlm && make run && make red   # base bench 53/0, red 3; joint bench 18/
 ```
 
 Internal benches (model development, `model/`): `make run` / `make red`
-(18 benches: 41+163+41+55+33+23+36+49+20+59+14+21+15+23+49+15+15+21 = **693 criteria**;
+(20 benches: 41+163+41+55+33+23+36+49+20+59+14+21+15+23+49+15+15+21+34+8 = **743 criteria**;
 every bench has a paired red run that must stay red -- `make red`).
 
 ### Two backends (pick one, they are exclusive)
@@ -132,9 +132,9 @@ controllers are never licensed out, so they can never be a DUT):
 | level | IP vendor | model / DWC IP | compatible | status |
 |---|---|---|---|---|
 | rootport | Synopsys | DWC PCIe Root Port (460A / 490A) | `snps,dw-pcie` | **built** |
-| rootport | Synopsys | DWC PCIe ECAM | `snps,dw-pcie-ecam` | todo |
-| rootport | Cadence | Cadence PCIe Host (RC) | `cdns,cdns-pcie-host` | todo |
-| rootport | Mobiveil | GPEX-40 PCIe | `mbvl,gpex40-pcie` | todo |
+| rootport | Synopsys | DWC PCIe ECAM | `snps,dw-pcie-ecam` | **built** |
+| rootport | Cadence | Cadence PCIe Host (RC) | `cdns,cdns-pcie-host` | **built** |
+| rootport | Mobiveil | GPEX-40 PCIe | `mbvl,gpex40-pcie` | **built** |
 | rootport | Northwest Logic | NWL PCIe Bridge (Xilinx-authored driver) | `xlnx,nwl-pcie-2.11` | **built** |
 | rootport | **Xilinx** | AXI PCIe host bridge | `xlnx,axi-pcie-host-1.00.a` | **built** |
 | rootport | **Xilinx** | Versal CPM PCIe host | `xlnx,versal-cpm-host-1.00` | **built** |
