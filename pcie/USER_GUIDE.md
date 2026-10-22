@@ -31,7 +31,8 @@ cd model/tlm && make run && make red   # base bench 53/0, red 3; joint bench 18/
 ```
 
 Internal benches (model development, `model/`): `make run` / `make red`
-(9 benches: 41+163+41+55+33+23+36+49+20 criteria, red 3/13/21/25/15/14/13/20/6).
+(18 benches: 41+163+41+55+33+23+36+49+20+59+14+21+15+23+49+15+15+21 = **693 criteria**;
+every bench has a paired red run that must stay red -- `make red`).
 
 ### Two backends (pick one, they are exclusive)
 
