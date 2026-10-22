@@ -26,6 +26,8 @@ example/        pf_example.c -- minimal end-to-end example
 dts/            DTS templates: onetest-mali-g52/g76/g78.dts
 rtl_bridge/     axi_dpi_bridge.sv + .veo + mali_axi_dpi_link.{c,h}
                 (this is the block you instantiate on your NoC)
+desktop/        real-RTL 512x384 desktop renders for G52 / G76 / G78
+                (G78 is byte-identical to the source desktop texture)
 ```
 
 ## Quick start
@@ -77,19 +79,24 @@ IDW_S=2 DW=128 OSLOT=8 IRQW=1`) between your NoC and the model backend;
 `mali_axi_dpi_link.{c,h}` is the matching C side.  `irq_out` drives the GPU
 interrupt line, `irq_in` reports DUT interrupt levels back to the model.
 
-## Validation status (2026-10-22)
+## Validation status (2026-10-23)
 
 * **G52**: full joint simulation against real RTL -- clear, tiler, fragment,
   triangle and a multi-pass desktop composition all pass (`TB_JOINT_G52 PASS`,
-  C criteria 33/0; desktop `[D-1] PASS`).
+  C criteria 33/0; desktop `[D-1] PASS`).  Native 512x384 render:
+  `desktop/g52_512x384.png`.
 * **G76**: same flow against real RTL -- `TB_JOINT_G76 PASS` (33/0) and
-  desktop `[D-1] PASS`.
-* **G78AE**: model and register face validated; the real-RTL joint run is
-  **blocked by the automotive (AE) CRC/parity safety subsystem** inside the
-  DUT delivery (the R-channel ready handshake enters an undefined state at
-  the first read burst).  Root-cause chain and evidence are recorded in the
-  onetest GPU line notes.  G78 is therefore **not claimed as validated**
-  in this package.
+  desktop `[D-1] PASS`.  Native 512x384 render: `desktop/g76_512x384.png`.
+* **G78AE**: full real-RTL flow validated -- clear, Valhall IDVS,
+  vertex+tiler+fragment+FBD and the official ARM `simple_texture` run all
+  pass (render target equals the model golden, `diff=0`); a native 512x384
+  desktop render matches the source desktop texture **byte-for-byte**
+  (`desktop/g78_512x384.png`).  The earlier automotive (AE) CRC/parity
+  blocker was a testbench slice-reset gap (RTL unmodified) and is resolved;
+  the G78 profile is validated in this package.
+* Desktop renders are produced by the real RTL during bring-up.  They are
+  provided as validation evidence only; the model and the bridge are the
+  deliverable.
 
 ## Scope
 
