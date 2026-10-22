@@ -1,8 +1,8 @@
-# Desktop renders (real RTL)
+# Desktop renders
 
-These 512x384 images are produced by the onetest panfrost host model driving
-the vendor RTL through the family AXI4 DPI bridge. They are validation
-evidence for the three supported profiles:
+These 512x384 images are produced by the onetest panfrost host model through
+the family AXI4 DPI bridge. They are validation evidence for the three
+supported profiles:
 
 | file | profile | result |
 |---|---|---|
@@ -12,8 +12,8 @@ evidence for the three supported profiles:
 
 Notes:
 
-* The G78 image was rendered with the official G78AE testbench flow on the
-  real RTL; the render target matches the source texture byte-for-byte
+* The G78 image was rendered with the official G78AE testbench flow; the
+  render target matches the source texture byte-for-byte
   (`byte diffs = 0`, `pixel diffs = 0`).
 * The desktop artwork intentionally contains CJK labels; that is image
   content, not source text. The model delivery itself is all-English.
