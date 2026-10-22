@@ -17,9 +17,9 @@ name Linux uses for an IP (DTS `compatible`).
 | Subclass | IP vendor | IP model | Linux key (DTS `compatible`) | Status |
 |---|---|---|---|---|
 | rootport | **Synopsys** | **DWC PCIe Root Port** -- controller versions **460A / 490A** (they differ at the ATU programming point) | `snps,dw-pcie` | built |
-| ecam | **Synopsys** | DWC PCIe ECAM (root-complex config access) | `snps,dw-pcie-ecam` | to-do |
-| rootport | **Cadence** | Cadence PCIe Host (RC) | `cdns,cdns-pcie-host` | to-do |
-| rootport | **Mobiveil** | Mobiveil GPEX-40 PCIe | `mbvl,gpex40-pcie` | to-do |
+| ecam | **Synopsys** | DWC PCIe ECAM (root-complex config access) | `snps,dw-pcie-ecam` | built |
+| rootport | **Cadence** | Cadence PCIe Host (RC) | `cdns,cdns-pcie-host` | built |
+| rootport | **Mobiveil** | Mobiveil GPEX-40 PCIe | `mbvl,gpex40-pcie` | built |
 | rootport | Northwest Logic | NWL PCIe Bridge (Xilinx-authored driver) | `xlnx,nwl-pcie-2.11` | built |
 | rootport | **Xilinx** | AXI PCIe host bridge | `xlnx,axi-pcie-host-1.00.a` | built |
 | rootport | **Xilinx** | Versal CPM / CPM5 PCIe host | `xlnx,versal-cpm-host-1.00`, `xlnx,versal-cpm5-host` | built |
