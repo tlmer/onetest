@@ -3,7 +3,8 @@
 This class models the Linux side of PCIe: the Root Port controller driver plus
 everything Linux does for it (configuration access, enumeration, BAR probing and
 resource assignment, MSI/MSI-X, SR-IOV/ARI, AER, power management, FLR/ReBAR/INTx,
-VC, CRS, DPC, link training, ACS/ATS/PASID, ECRC).  It runs **without a Linux OS** and sits on a **standard AXI4 interface**, so
+VC, CRS, DPC, link training, ACS/ATS/PASID, ECRC, inbound ATU, a minimal IOMMU,
+multi-word MSI-X PBA, DTS-driven platform selection, standard testcases, console).  It runs **without a Linux OS** and sits on a **standard AXI4 interface**, so
 it drops onto a NoC in front of the controller IP under test.
 
 Organised as **subclass -> IP vendor -> IP model**, plus a key table keyed by the
@@ -17,9 +18,10 @@ name Linux uses for an IP (DTS `compatible`).
 | ecam | **Synopsys** | DWC PCIe ECAM (root-complex config access) | `snps,dw-pcie-ecam` | to-do |
 | rootport | **Cadence** | Cadence PCIe Host (RC) | `cdns,cdns-pcie-host` | to-do |
 | rootport | **Mobiveil** | Mobiveil GPEX-40 PCIe | `mbvl,gpex40-pcie` | to-do |
-| rootport | Northwest Logic | NWL PCIe Bridge (Xilinx-authored driver) | `xlnx,nwl-pcie-2.11` | to-do |
-| rootport | **Xilinx** | AXI PCIe host bridge | `xlnx,axi-pcie-host-1.00.a` | to-do |
-| rootport | **Xilinx** | Versal CPM / CPM5 PCIe host | `xlnx,versal-cpm-host-1.00`, `xlnx,versal-cpm5-host` | to-do |
+| rootport | Northwest Logic | NWL PCIe Bridge (Xilinx-authored driver) | `xlnx,nwl-pcie-2.11` | built |
+| rootport | **Xilinx** | AXI PCIe host bridge | `xlnx,axi-pcie-host-1.00.a` | built |
+| rootport | **Xilinx** | Versal CPM / CPM5 PCIe host | `xlnx,versal-cpm-host-1.00`, `xlnx,versal-cpm5-host` | built |
+| rootport | **Altera** | Altera PCIe Root Port | `altr,pcie-root-port-1.0` | built |
 
 **Scope -- host-side working modes only.**  onetest is a Linux proxy, so the class
 covers the modes Linux drives as a host: for PCIe that is **Root Complex mode**.
@@ -29,10 +31,10 @@ serve it -- so endpoint IPs and their drivers (`snps,dw-pcie-ep`,
 of scope and do not appear in the ledger.
 
 **IP vendors only.**  Chip-makers' controllers are never licensed out, so they can
-never be the DUT and never enter the ledger.  *Exception (user-directed, 2026-10-14):*
-the Xilinx-hosted PCIe root blocks above are listed for the customer's Xilinx platform
-flow -- the exception is exactly one vendor wide and the ledger predicate still rejects
-every other chip maker (and endpoint keys in all cases).  Ask for an IP by name and you get
+never be the DUT and never enter the ledger.  *Exception (user-directed, 2026-10-14 / extended 2026-10-22):*
+the Xilinx-hosted PCIe root blocks and the Altera root port above are listed for the
+customer's platform flow -- the exception covers exactly Xilinx and Altera and the
+ledger predicate still rejects every other chip maker (and endpoint keys in all cases).  Ask for an IP by name and you get
 either the model that drives it or an explicit "not implemented" -- never a
 silent fallback.
 
@@ -43,9 +45,12 @@ the enumeration itself lives in `drivers/pci/{probe,setup-bus,setup-res,access}.
 |---|---|
 | [`include/`](include/)[`lib/`](lib/) | the model's contract headers + prebuilt library |
 | [`smoke/`](smoke/) | smoke bench over the public ABI (56 green / 4 red) |
+| [`dts/`](dts/) | DTS templates: DWC / Xilinx / Altera |
+| [`console/`](console/) | standalone model console (`run all` = 11/11 testcases + coverage) |
 | [`example/`](example/) | smallest runnable example (enumeration -> config read -> DMA route -> MSI) |
 | [`USER_GUIDE.md`](USER_GUIDE.md) | how to build, which ABI to call, how to plug it onto a NoC |
 | [`hal/`](hal/) | the key table above, with each row's `file:line` |
+| `pcie_tc_ref.h` | standard testcase control ABI (independent magic `'t'`) |
 
 ## Interfaces
 
@@ -58,6 +63,13 @@ the enumeration itself lives in `drivers/pci/{probe,setup-bus,setup-res,access}.
   nothing is ever silently dropped.
 * **DUT posted writes** (DMA write-back, MSI) are **routed by address to their
   owner**; an unowned address answers DECERR and is accounted, never accepted.
+* **PCIe-domain DMA** goes through the inbound ATU (DWC) or the range/identity
+  windows (Xilinx/Altera) and, when enabled, the minimal IOMMU (stream table ->
+  context descriptor -> 4KB page walk); misses are rejected and counted.
+* **Model-level TLP semantics** (malformed, ECRC, message routing, VDM,
+  LTR/OBFF/PTM/DPA, atomics, 10-bit tag, RO/IDO, ACS, ATS invalidate, per-VC
+  egress) are delivered as a reference layer with red/green criteria; they are
+  not visible over AXI and are not part of the AXI4 contract.
 
 ## What "Linux proxy" means here
 

@@ -1,0 +1,45 @@
+/dts-v1/;
+
+/*
+ * onetest -- DWC PCIe Root Port proxy model: DTS template (T1 delivery surface)
+ *
+ * Change this file to change the configuration -- do NOT edit C code.
+ * Loading entry points:
+ *   1) model API : pcie_model_load_dts(path)   (see model/pcie_dts.h)
+ *   2) test bench: PCIE_DTS=<this file> when starting the model
+ *
+ * Keys:
+ *   compatible            "snps,dw-pcie" (required)
+ *   reg                   <cfg_base cfg_size>   downstream config-cycle window
+ *   onetest,dbi-base      host register window base (DBI)
+ *   onetest,mem-base      host memory window base (DMA buffers)
+ *   onetest,ecam-base     ECAM window base (0 size = disabled)
+ *   onetest,atu-cpu-base  outbound ATU MEM window, CPU side
+ *   onetest,atu-pci-base  outbound ATU MEM window, PCI side
+ *   onetest,atu-cpu-size  outbound ATU MEM window size
+ *   onetest,msi-vectors   MSI vector count (platform parameter pp->num_vectors)
+ *   onetest,cfg-mode      0 = ATU CFG0/CFG1, 1 = ECAM
+ *   onetest,vendor        460 or 490 (controller generation)
+ *
+ * All addresses are host CPU addresses. Windows must not overlap: the AXI
+ * fabric is first-match-wins.
+ */
+/ {
+	model = "onetest-pcie-template";
+	compatible = "onetest,test-bench";
+
+	pcie@b0000000 {
+		compatible = "snps,dw-pcie";
+		reg = <0xb0000000 0x00100000>;		/* config-cycle window */
+
+		onetest,dbi-base = <0x00000000>;
+		onetest,mem-base = <0x80000000>;
+		onetest,ecam-base = <0xc0000000>;
+		onetest,atu-cpu-base = <0x40000000>;
+		onetest,atu-pci-base = <0x00000000>;
+		onetest,atu-cpu-size = <0x10000000>;
+		onetest,msi-vectors = <0x8>;
+		onetest,cfg-mode = <0x0>;
+		onetest,vendor = <0x1cc>;		/* 460 decimal */
+	};
+};

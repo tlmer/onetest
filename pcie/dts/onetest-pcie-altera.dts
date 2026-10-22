@@ -1,0 +1,27 @@
+/dts-v1/;
+
+/*
+ * onetest -- Altera/Intel PCIe root template (T1 delivery surface)
+ *
+ * Compatible: "altr,pcie-root-port-1.0" (K:drivers/pci/controller/pcie-altera.c)
+ * Vendor root ports use the ECAM config path; no iATU is modeled.
+ */
+/ {
+	model = "onetest-pcie-altera-template";
+	compatible = "onetest,test-bench";
+
+	pcie@e0000000 {
+		compatible = "altr,pcie-root-port-1.0";
+		reg = <0xe0000000 0x00100000>;		/* ECAM window */
+
+		onetest,dbi-base = <0x00000000>;
+		onetest,mem-base = <0x80000000>;
+		onetest,ecam-base = <0xe0000000>;
+		onetest,atu-cpu-base = <0x40000000>;
+		onetest,atu-pci-base = <0x00000000>;
+		onetest,atu-cpu-size = <0x10000000>;
+		onetest,msi-vectors = <0x8>;
+		onetest,cfg-mode = <0x1>;
+		onetest,vendor = <0x0>;
+	};
+};

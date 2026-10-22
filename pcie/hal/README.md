@@ -11,9 +11,10 @@ listed: a chip maker's controller is never licensed out, so it can never be a DU
 | ecam | Synopsys | DWC PCIe ECAM | `snps,dw-pcie-ecam` | todo |
 | rootport | Cadence | Cadence PCIe Host (RC) | `cdns,cdns-pcie-host` | todo |
 | rootport | Mobiveil | Mobiveil GPEX-40 PCIe | `mbvl,gpex40-pcie` | todo |
-| rootport | Northwest Logic | NWL PCIe Bridge | `xlnx,nwl-pcie-2.11` | todo |
-| rootport | Xilinx *(directed exception)* | AXI PCIe host bridge | `xlnx,axi-pcie-host-1.00.a` | todo |
-| rootport | Xilinx *(directed exception)* | Versal CPM / CPM5 PCIe host | `xlnx,versal-cpm-host-1.00`, `xlnx,versal-cpm5-host` | todo |
+| rootport | Northwest Logic | NWL PCIe Bridge | `xlnx,nwl-pcie-2.11` | built |
+| rootport | Xilinx *(directed exception)* | AXI PCIe host bridge | `xlnx,axi-pcie-host-1.00.a` | built |
+| rootport | Xilinx *(directed exception)* | Versal CPM / CPM5 PCIe host | `xlnx,versal-cpm-host-1.00`, `xlnx,versal-cpm5-host` | built |
+| rootport | Altera *(directed exception)* | Altera PCIe Root Port | `altr,pcie-root-port-1.0` | built |
 
 Contract: the same IP name always selects the same driver; an unknown name is an
 explicit error (`-ENODEV`), never a silent fallback; a name listed without a
@@ -26,8 +27,9 @@ the bind picks the right ops table.
 absent, exactly as in the class ledger: device mode depends on the customer's own
 design.
 
-**Chip makers** are excluded from the ledger as a rule; the Xilinx rows are a
-user-directed exception (2026-10-14) for the customer's Xilinx platform flow.  The
+**Chip makers** are excluded from the ledger as a rule; the Xilinx and Altera rows
+are a user-directed exception (2026-10-14 / extended 2026-10-22) for the customer's
+platform flow.  The
 exception is exactly one vendor wide: the predicate (`hal/tb/tb_hal.c`,
 `prop_no_chipmaker`) still rejects every other chip maker, and the RED negative
 control uses one of them.

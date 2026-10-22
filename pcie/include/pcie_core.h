@@ -18,6 +18,10 @@ int  pcie_init(void);
 
 int  pcie_prog_outbound_atu(u32 index, u32 type, u64 cpu_addr, u64 pci_addr, u64 size);
 int  pcie_translate_out(u64 cpu, u64 *pci, u32 *type);
+
+int  pcie_prog_inbound_atu(u32 index, u64 pci_base, u64 cpu_addr, u64 size);
+int  pcie_translate_in(u64 pci, u64 *cpu, u32 *type);
+unsigned pcie_in_untranslated(void);
 u32  pcie_region_ctrl1(u32 idx);
 void pcie_set_enable_stuck(int v);      
 unsigned pcie_untranslated(void);

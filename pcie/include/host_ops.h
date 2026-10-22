@@ -36,6 +36,8 @@ u32  pcie_dbi_rd32(u32 off);
 void pcie_dbi_wr32(u32 off, u32 v);
 extern const struct pcie_host_ops pcie_host_ops_460a;
 extern const struct pcie_host_ops pcie_host_ops_490a;
+
+extern const struct pcie_host_ops pcie_host_ops_vendor;
 extern const struct pcie_host_ops *g_pcie_ops;
 #ifdef __cplusplus
 }

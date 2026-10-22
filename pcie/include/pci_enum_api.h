@@ -8,9 +8,29 @@ extern "C" {
 #include "pcie_core.h"
 #include "pci_probe.h"
 #include "backend/backend.h"
+#include "pcie_dma.h"          
 
 int  pcie_model_init(void);
 void pcie_model_set_cfg_mode(unsigned m);      
+void pcie_model_set_msi_vectors(unsigned n);   
+void pcie_model_set_vendor(int v);             
+
+#define PCIE_PROFILE_DW_460   0
+#define PCIE_PROFILE_DW_490   1
+#define PCIE_PROFILE_XLNX_AXI 2
+#define PCIE_PROFILE_XLNX_NWL 3
+#define PCIE_PROFILE_XLNX_CPM 4
+#define PCIE_PROFILE_ALTR     5
+void pcie_model_set_profile(int p);
+int  pcie_model_profile(void);
+u32  pcie_model_profile_version(void);         
+const char *pcie_model_profile_name(void);
+
+void pcie_model_msi_setup(u64 target, unsigned vectors);
+const char *pcie_model_vendor_name(void);      
+u32  pcie_model_version(void);                 
+u32  pcie_model_link_up(void);
+long pcie_model_ioctl(unsigned int cmd, void *arg, unsigned long len);  
 void pcie_model_set_backend(unsigned b);       
 unsigned pcie_model_backend(void);
 unsigned pcie_model_cfg_mode(void);

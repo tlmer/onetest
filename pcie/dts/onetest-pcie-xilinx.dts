@@ -1,0 +1,30 @@
+/dts-v1/;
+
+/*
+ * onetest -- Xilinx PCIe root template (T1 delivery surface)
+ *
+ * Supported compatibles:
+ *   "xlnx,axi-pcie-host-1.00.a"    AXI PCIe host bridge
+ *   "xlnx,nwl-pcie-2.11"           Northwest Logic PCIe bridge (Xilinx driver)
+ *   "xlnx,versal-cpm-host-1.00"    Versal CPM PCIe host
+ * Vendor root ports use the ECAM config path; no iATU is modeled.
+ */
+/ {
+	model = "onetest-pcie-xilinx-template";
+	compatible = "onetest,test-bench";
+
+	pcie@d0000000 {
+		compatible = "xlnx,axi-pcie-host-1.00.a";
+		reg = <0xd0000000 0x00100000>;		/* ECAM window */
+
+		onetest,dbi-base = <0x00000000>;	/* model register window */
+		onetest,mem-base = <0x80000000>;
+		onetest,ecam-base = <0xd0000000>;
+		onetest,atu-cpu-base = <0x40000000>;	/* `ranges` (no iATU used) */
+		onetest,atu-pci-base = <0x00000000>;
+		onetest,atu-cpu-size = <0x10000000>;
+		onetest,msi-vectors = <0x8>;
+		onetest,cfg-mode = <0x1>;
+		onetest,vendor = <0x0>;
+	};
+};

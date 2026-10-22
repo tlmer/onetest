@@ -84,6 +84,7 @@ struct pcie_dev_core {
     struct pcie_atu_region atu[PCIE_ATU_MAX_REGIONS];
     u64 dev_reg_base;
     unsigned xfers, untranslated;
+    unsigned in_xfers, in_untranslated;   
     int enable_stuck;             
     void (*on_irq)(void *ctx); void *on_irq_ctx;
 
@@ -114,6 +115,7 @@ struct pcie_dev_core {
     u32 msi_enable[MAX_MSI_IRQS / MAX_MSI_IRQS_PER_CTRL];
     u32 msi_mask  [MAX_MSI_IRQS / MAX_MSI_IRQS_PER_CTRL];
     unsigned msi_vectors;          
+    unsigned msix_nvec_override;   
     unsigned msi_recv;             
     unsigned msi_sent;             
     u32 msi_last_reqid;            
@@ -166,6 +168,8 @@ u32  pcie_dev_core_rd32(struct pcie_dev_core *d, u64 a);
 void pcie_dev_core_wr32(struct pcie_dev_core *d, u64 a, u32 v);
 
 int  pcie_dev_core_translate_out(struct pcie_dev_core *d, u64 cpu, u64 *pci, u32 *type);
+
+int  pcie_dev_core_translate_in(struct pcie_dev_core *d, u64 pci, u64 *cpu, u32 *type);
 u32  pcie_dev_core_region_type(const struct pcie_dev_core *d, u32 idx);
 u32  pcie_dev_core_region_enabled(const struct pcie_dev_core *d, u32 idx);
 

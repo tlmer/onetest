@@ -134,16 +134,69 @@ controllers are never licensed out, so they can never be a DUT):
 | rootport | Synopsys | DWC PCIe ECAM | `snps,dw-pcie-ecam` | todo |
 | rootport | Cadence | Cadence PCIe Host (RC) | `cdns,cdns-pcie-host` | todo |
 | rootport | Mobiveil | GPEX-40 PCIe | `mbvl,gpex40-pcie` | todo |
-| rootport | Northwest Logic | NWL PCIe Bridge (Xilinx-authored driver) | `xlnx,nwl-pcie-2.11` | todo |
-| rootport | **Xilinx** | AXI PCIe host bridge | `xlnx,axi-pcie-host-1.00.a` | todo |
-| rootport | **Xilinx** | Versal CPM PCIe host | `xlnx,versal-cpm-host-1.00` | todo |
-| rootport | **Xilinx** | Versal CPM5 PCIe host | `xlnx,versal-cpm5-host` | todo |
+| rootport | Northwest Logic | NWL PCIe Bridge (Xilinx-authored driver) | `xlnx,nwl-pcie-2.11` | **built** |
+| rootport | **Xilinx** | AXI PCIe host bridge | `xlnx,axi-pcie-host-1.00.a` | **built** |
+| rootport | **Xilinx** | Versal CPM PCIe host | `xlnx,versal-cpm-host-1.00` | **built** |
+| rootport | **Xilinx** | Versal CPM5 PCIe host | `xlnx,versal-cpm5-host` | **built** |
+| rootport | **Altera** | Altera PCIe Root Port | `altr,pcie-root-port-1.0` | **built** |
 
 Endpoint keys (`snps,dw-pcie-ep`, `cdns,cdns-pcie-ep`, `xlnx,versal-cpm-ep*`, ...) are
 **not listed on purpose**: device mode is out of the onetest scope (see
 `hal/hal_table.c`).  The Xilinx rows are a **user-directed exception** to the
-IP-vendors-only rule (customer's Xilinx platform flow); the exception is exactly one
-vendor wide -- the ledger predicate still rejects every other chip maker.
+IP-vendors-only rule (customer's Xilinx/Altera platform flow, 2026-10-22); the
+exception covers exactly Xilinx and Altera -- the ledger predicate still rejects
+every other chip maker.
+
+## 4b. IP profiles and windows
+
+`pcie_model_set_profile()` (or the DTS `compatible`) selects how the root port
+drives its windows:
+
+| profile | config path | windows |
+|---|---|---|
+| Synopsys DWC 460A/490A | ATU CFG0/CFG1 or ECAM | outbound/inbound iATU |
+| Xilinx AXI / NWL / Versal CPM | **ECAM** | `ranges` + host-DRAM identity (no iATU) |
+| Altera root port | **ECAM** | `ranges` + host-DRAM identity (no iATU) |
+
+All profiles answer their own configuration through the model register window.
+Inbound DMA is expressed as PCIe address -> CPU address: iATU DIR_IB for DWC
+(`pcie_prog_inbound_atu`) and the range windows for vendor profiles, then an
+optional IOMMU (below). `pcie_model_dma_pcie_write/read` is the injection API;
+unmapped traffic is rejected and counted (never silently forwarded).
+
+## 4c. Minimal IOMMU (VFIO-style)
+
+`model/pcie_iommu.h` is a small SMMUv3-inspired controller owned by the model
+(not smmu600): linear stream table (BDF -> STE), context descriptor
+(TTBR0/T0SZ/permissions), 4KB four-level page walk, TLB, TLBI/CFGI command
+queue, fault registers and a bypass STE. The DMA path is
+PCIe -> inbound ATU -> IOMMU -> route. The table format is the model's own
+(documented in the header), not SMMUv3-bit-compatible; the translation
+interface is `(BDF, address, is_write) -> PA`, so a real SMMU model can replace
+it without touching the PCIe side.
+
+## 4d. DTS, testcases, coverage and console (onetest T1/T2/T4/T8)
+
+* DTS templates: `dts/onetest-pcie.dts` (DWC), `-xilinx.dts`, `-altera.dts`;
+  loader `pcie_model_load_dts()` (values apply on the next init).
+* Testcase channel (ABI `pcie_tc_ref.h`, independent magic `'t'`):
+  `GET_COUNT -> GET_INFO(id) -> RUN{id, iterations}`; `RUN{id=ALL}` runs all;
+  `COVERAGE` returns totals. 11 testcases: enum, cfg, atu-out, atu-in, iommu,
+  msi, dpc, msix-pba, acs-ats, tlp, vendor.
+* Coverage report lists tested items and untested items **with reasons**
+  (`pcie_tc_coverage_text`, console `cover`).
+* Console: `pcie_model_console_start()` is idempotent; `console/console_main.c`
+  is a standalone executable linking only include+lib; commands
+  `help/info/list/run <id|all> [n]/cover/dts <path>/quit`.
+
+## 4e. Model-level TLP semantics (reference layer)
+
+`model/pcie_tlp.h` provides malformed checks, ECRC (CRC-32/BZIP2), six message
+routes, VDM, LTR/OBFF/PTM/DPA, atomic operations, 10-bit tag gating, RO/IDO
+relief, ACS checks, ATS invalidate req/resp and per-VC egress (strict/RR/WRR).
+These mechanisms belong to the DUT/link side and are **not visible over AXI**;
+they are delivered as a reference semantic layer with red/green criteria, not
+as part of the AXI4 contract.
 
 ## 5. Consistency with Linux
 
@@ -171,7 +224,9 @@ pcie/
 ├─ build_lib.sh        rebuild the library
 ├─ smoke/              public-ABI smoke bench (56 green / 4 red)
 ├─ example/            smallest runnable example
-├─ model/              model sources + 10 internal benches
+├─ dts/                DTS templates (DWC / Xilinx / Altera) -- T1 delivery surface
+├─ console/            standalone model console (T8; no simulator)
+├─ model/              model sources + 17 internal benches
 │   └─ tlm/            SystemC/TLM build of the same sources (+ joint bench)
 └─ hal/                IP key table (compatible -> driver/model)
 ```

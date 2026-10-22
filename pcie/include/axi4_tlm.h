@@ -103,6 +103,8 @@ const struct axi4_route *axs_route_lookup(const struct axi4_tlm_slave *s, u64 ad
 
 int  axs_recv(struct axi4_tlm_slave *s, struct axi4_tlm_beat *b);
 
+int  axs_mem_read(struct axi4_tlm_slave *s, u64 addr, u8 *dst, unsigned n);
+
 struct axi4_tlm_slave *pcie_model_axs(void);
 void pcie_model_axs_reset(void);             
 
