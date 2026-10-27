@@ -121,7 +121,7 @@ The request address mapping is:
 dst AccID = req.addr[56:47]
 ```
 
-unless an explicit `dstaccid` (Synopsys `dstphys_acc_id`) is non-zero. The
+unless an explicit `dstaccid` (`dstphys_acc_id`) is non-zero. The
 source AccID is explicit in `srcaccid`; the port object supplies a default.
 
 OrigData carries 64 bytes per beat with optional `be`/`be_valid` byte enables,
@@ -150,7 +150,7 @@ port.credit_return(chan, vc, num, pool, 0, 1);    // inject parity for a red tes
 - `uart_*` methods provide the optional UART stream group (control/reset
   handshake and raw stream writes).
 
-### 6.4 Parity (Synopsys 2026-10-27 signal list)
+### 6.4 Parity (2026-10-27 UPLI signal list)
 
 All parity bits are **even parity**. Coverage is model-defined and is
 documented in `UPLI_PORT_CONTRACT.md`:

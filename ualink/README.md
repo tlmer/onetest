@@ -24,7 +24,7 @@ ualink/
 
 - UPLI OrigReq / OrigData / Read Response / Write Response ports with credits,
   congestion, per-port interrupt, and UART stream group.
-- Synopsys UPLI parity signals (2026-10-27 list): address, fields, AuthTag,
+- UPLI parity signals (2026-10-27 list): address, fields, AuthTag,
   data lanes, byte enable, pool, valid, and credit-valid parity; even parity,
   TX checked and RX generated.
 - Switch fabric: unicast, multicast, QoS/VC, WRR, adaptive routing,
