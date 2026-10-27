@@ -29,7 +29,9 @@ as it is complete:
 | [`smmu/`](smmu/) | SMMUv3 host model (SMMU-600/700, two IIDR product ids) + driver key table | available |
 | [`gpu/mali450/`](gpu/mali450/) | ARM Mali Utgard (Mali-450/400, `lima`) Linux-proxy host model: bring-up/MMU/page tables, GEM + VAs, GP/PP jobs, fences, fault/recovery; control ABI + testcase ABI + DTS template + NoC bridge | available |
 | [`npx/`](npx/) | Synopsys ARC NPX6/VPX host model: remoteproc firmware load, ARCSYNC v1/v2 control, the 7-command app UAPI + testcase control ABI, runtime DTS loader, dma-buf; DTS template + AXI4/DPI NoC bridge | available |
-| [`ualink/`](ualink/) | UALink switch TLM: UPLI port abstraction (parity per the Synopsys 2026-10-27 list), switch fabric/QoS/INC, Manageability 1.0 + CPER non-volatile store, SystemC N-port bank; binary library + testcase ABI + DTS + console | available |
+
+The UALink switch model is published separately as a sibling repository:
+[`tlmer/ualink_switch`](https://github.com/tlmer/ualink_switch).
 
 Each delivery ships source or a binary model library as appropriate, a
 self-test (or console) that builds against the shipped interface, and a single
@@ -50,7 +52,4 @@ cd npx/smoke && ./tb_npx_tc_ioctl                  # testcase channel: 17/0
 cd npx/smoke && ./tb_npx_dts                       # DTS loader: 26/0
 cd npx/example && make && ./npx_example            # NPX_EXAMPLE PASS
 cd pcie_switch/console && make && ./pcie_switch_console   # testcases + coverage
-cd ualink/smoke && make && ./tb_ualink_smoke            # UALINK_SMOKE PASS
-cd ualink/smoke && ./tb_tc_ioctl && ./tb_dts            # testcase ABI + DTS
-cd ualink/console && make && printf 'tc all\ncover\nquit\n' | ./ualink_console
 ```
