@@ -41,6 +41,7 @@ Delivery directories:
 | [`ahci/`](ahci/) | the built AHCI model (DWC + CEVA behind one ops layer) + smoke test |
 | [`ufs/`](ufs/) | the built UFS model (DWC G210 + Cadence behind one ops layer) + smoke test |
 | [`sas/`](sas/) | the built SAS Linux-proxy model (hisi_sas v3) + AXI4 bridge + DTS template + smoke/example |
+| [`sasv2/`](sasv2/) | SAS Linux-proxy **v2**: adds the Linux SCSI mid-layer flow (REPORT LUNS scan, sd-lite capacity/WP/cache, READ/WRITE 10/16 with 10->6, EH, media change) on the same AXI4 bridge |
 | [`sas_hdd/`](sas_hdd/) | **SAS HDD target TLM companion** (SystemC, SSP target + SCSI command set, self-checking 25-criteria bench) -- imported from the standalone SAS HDD package |
 | [`hal/`](hal/) | the key table above, with each row's `file:line` |
 | [`class/`](class/) | the class layer: the unified storage ioctl (SCSI CDB / error recovery / partitions) |
