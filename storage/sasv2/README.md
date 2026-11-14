@@ -33,7 +33,12 @@ buffer IU -> interrupt. Also SMP DISCOVER, ITCT clear, soft reset, sense.
   2^32 blocks, ILLEGAL REQUEST/ASC 0x20 degrades 10 -> 6, UNIT ATTENTION/BUSY
   is retried;
 - EH: timeout -> abort(TMF_ABORT_TASK) -> device reset(LU RESET) -> host reset;
-- media change: TUR UNIT ATTENTION -> revalidate capacity/WP/cache.
+- media change: TUR UNIT ATTENTION -> revalidate capacity/WP/cache;
+- multi-LUN scan: the REPORT LUNS reply is laid out as SPC specifies (8-byte
+  header, entries from byte 8), every reported LUN is probed and registered,
+  and the LUN is carried into the SSP command table per request;
+- request queue: pending and in-flight lists, lowest-free tags, depth gate on
+  pending + in-flight, FIFO completion by default (deterministic model).
 
 ## Layout
 
@@ -81,19 +86,24 @@ DTS additions (defaults 8 / 1): `max-lun`, `scan-on-init`.
 
 ## Testcases and coverage
 
-The registry has 20 cases (init/inquiry/read_capacity/read10/write10/TMF/
+The registry has 21 cases (init/inquiry/read_capacity/read10/write10/TMF/
 ITCT/SMP/W1C/sense/soft reset, multi-SGE, multi-queue, err_record,
 invalid_opcode, abort_stat, read10_big, read_capacity16, read16_write16,
-tmf_variants). The v2 SCSI flow has dedicated benches: `tb_scsi_scan`,
-`tb_scsi_rw`, `tb_scsi_eh`, `tb_scsi_retry`, `tb_scsi_media` (internal test
-sources; each has green/red pairs). `sas_console` provides `scan`, `luns`,
-`sdinfo`, `run`, `cover`.
+tmf_variants, scsi_rw). The v2 SCSI flow has dedicated benches:
+`tb_scsi_scan`, `tb_scsi_rw`, `tb_scsi_eh`, `tb_scsi_retry`,
+`tb_scsi_media`, `tb_scsi_lun`, `tb_scsi_queue` (internal test sources; each
+has green/red pairs). `sas_console` provides `scan`, `luns`, `sdinfo`, `run`,
+`cover`.
 
 ## Boundaries
 
 - Linux side only (host mode); the DUT is the customer's HBA.
 - No sysfs/kobject, block layer (blk-mq), VFS/filesystem, PM/ACPI, workqueue
   (single-threaded event loop), or SG_IO semantics.
-- Multi-LUN parse is 8-byte BE LUN; the reference stub exposes LUN 0.
-- Queueing is synchronous (the driver proxy completes one command at a time in
-  the model); tags/in-flight accounting follows the SCSI core shape.
+- Multi-LUN parse is 8-byte BE LUN (flat LUN space).  The reference stub
+  defaults to LUN 0 and can expose more LUNs through the debug hook; the real
+  device decides what REPORT LUNS returns.
+- Queueing is a deterministic model: the LLD executes at dispatch time and the
+  completion report is deferred (pending/in-flight, tags, depth gate, FIFO
+  completion).  It is not real concurrency; a truly asynchronous LLD is out of
+  scope for v2.

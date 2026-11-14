@@ -90,15 +90,16 @@ ioctl(fd, SAS_TC_RUN, &run);
 ioctl(fd, SAS_TC_COVERAGE_TEXT, text);
 ```
 
-The registry has 20 cases: the U2 vertical slice (init, inquiry, capacity,
+The registry has 21 cases: the U2 vertical slice (init, inquiry, capacity,
 read/write, TMF, ITCT clear, SMP, W1C, sense, soft reset) plus the U3/U4
 coverage: `multi_sge` (3-entry SGL; large transfers use 8), `multi_queue`
 (round-robin over every DQ/CQ), `err_record` (transport error record),
 `invalid_opcode` (ILLEGAL REQUEST), `abort_stat` (TMF abort status in CQE
 dw0[15:13]), `read10_big` (READ(10) of 64 KB then 1 MB, byte-for-byte),
 `read_capacity16` (SERVICE ACTION IN(16), SA 0x10), `read16_write16`
-(READ(16)/WRITE(16) round trip) and `tmf_variants` (CLEAR TASK SET and
-LOGICAL UNIT RESET).
+(READ(16)/WRITE(16) round trip), `tmf_variants` (CLEAR TASK SET and
+LOGICAL UNIT RESET) and `scsi_rw` (WRITE(10)/READ(10) round trip through
+the SCSI mid-layer path, `sas_model_scsi_rw`).
 
 The same registry is available in the standalone console:
 
