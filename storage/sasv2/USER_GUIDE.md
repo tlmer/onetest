@@ -185,8 +185,9 @@ scan-on-init = <1>;
 
 Console additions: `scan`, `luns`, `sdinfo` (capacity/WP/cache per sdev).
 
-Dedicated v2 benches: `tb_scsi_scan`, `tb_scsi_rw`, `tb_scsi_eh`,
-`tb_scsi_retry` (10->6 / UA retry / tag queue), `tb_scsi_media` (WP/cache /
-media change). The storage-class end-to-end adapter is
-`sasv2/class/class_ops_sas_v2.c` (RW via `sas_model_scsi_rw`); build/run it with
-`sasv2/class/run_sasv2_class.sh`. `sasv2/run_all.sh` runs the whole v2 suite.
+Dedicated v2 benches (internal test sources, each with green/red pairs):
+`tb_scsi_scan`, `tb_scsi_rw`, `tb_scsi_eh`, `tb_scsi_retry` (10->6 / UA
+retry / tag queue), `tb_scsi_media` (WP/cache / media change), `tb_scsi_lun`
+(multi-LUN REPORT LUNS) and `tb_scsi_queue` (pending/in-flight tags). The
+storage-class end-to-end adapter and the full-suite runner live in the source
+tree.
