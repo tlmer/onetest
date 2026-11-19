@@ -86,10 +86,14 @@ DTS additions (defaults 8 / 1): `max-lun`, `scan-on-init`.
 
 ## Testcases and coverage
 
-The registry has 21 cases (init/inquiry/read_capacity/read10/write10/TMF/
+The registry has 24 cases (init/inquiry/read_capacity/read10/write10/TMF/
 ITCT/SMP/W1C/sense/soft reset, multi-SGE, multi-queue, err_record,
 invalid_opcode, abort_stat, read10_big, read_capacity16, read16_write16,
-tmf_variants, scsi_rw). The v2 SCSI flow has dedicated benches:
+tmf_variants, scsi_rw, kernel_flow, kernel_flow_async, inquiry_vpd).
+`kernel_flow` drives the LUN0-first scan with UA retry and a mixed admin/IO
+queue; `kernel_flow_async` submits REPORT LUNS and MODE SENSE without waiting;
+`inquiry_vpd` checks VPD INQUIRY pages 00h/80h/83h using the kernel's 4-byte
+header probe followed by the full page. The v2 SCSI flow has dedicated benches:
 `tb_scsi_scan`, `tb_scsi_rw`, `tb_scsi_eh`, `tb_scsi_retry`,
 `tb_scsi_media`, `tb_scsi_lun`, `tb_scsi_queue` (internal test sources; each
 has green/red pairs). `sas_console` provides `scan`, `luns`, `sdinfo`, `run`,

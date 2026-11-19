@@ -90,7 +90,7 @@ ioctl(fd, SAS_TC_RUN, &run);
 ioctl(fd, SAS_TC_COVERAGE_TEXT, text);
 ```
 
-The registry has 21 cases: the U2 vertical slice (init, inquiry, capacity,
+The registry has 24 cases: the U2 vertical slice (init, inquiry, capacity,
 read/write, TMF, ITCT clear, SMP, W1C, sense, soft reset) plus the U3/U4
 coverage: `multi_sge` (3-entry SGL; large transfers use 8), `multi_queue`
 (round-robin over every DQ/CQ), `err_record` (transport error record),
@@ -98,8 +98,13 @@ coverage: `multi_sge` (3-entry SGL; large transfers use 8), `multi_queue`
 dw0[15:13]), `read10_big` (READ(10) of 64 KB then 1 MB, byte-for-byte),
 `read_capacity16` (SERVICE ACTION IN(16), SA 0x10), `read16_write16`
 (READ(16)/WRITE(16) round trip), `tmf_variants` (CLEAR TASK SET and
-LOGICAL UNIT RESET) and `scsi_rw` (WRITE(10)/READ(10) round trip through
-the SCSI mid-layer path, `sas_model_scsi_rw`).
+LOGICAL UNIT RESET), `scsi_rw` (WRITE(10)/READ(10) round trip through the
+SCSI mid-layer path, `sas_model_scsi_rw`), `kernel_flow` (S6.4: LUN0-first
+scan with UA retry + mixed admin/IO queue completed out of order,
+`sas_model_scsi_kernel_flow`), `kernel_flow_async` (REPORT LUNS and
+MODE SENSE submitted without waiting, non-blocking admin poll) and
+`inquiry_vpd` (VPD INQUIRY pages 00h/80h/83h: 4-byte header probe followed
+by the full page, checking page code and page length).
 
 The same registry is available in the standalone console:
 
@@ -153,8 +158,10 @@ storage/class -> scsi_core (host/device/lun, scan, sd-lite, queue, EH)
 ```
 
 * `sas_model_init()` runs the scan by default:
-  `REPORT LUNS(0xA0) -> LUN0 fallback -> INQUIRY -> TUR -> READ CAPACITY(16 first,
-  RC10 fallback) -> MODE SENSE (WP/cache)` and prints kernel-style lines
+  **LUN 0 probe first** (`INQUIRY -> TUR -> READ CAPACITY (16 first, RC10
+  fallback) -> MODE SENSE (WP/cache)`), then `REPORT LUNS(0xA0)` for the
+  remaining LUNs; a failed REPORT LUNS keeps the already-probed LUN 0
+  (kernel order, `K:scsi_scan.c:1667/1669`).  It prints kernel-style lines
   (`scsi H:C:T:L`, `sd ... Attached SCSI disk`). Disable it with DTS
   `scan-on-init = <0>`.
 * READ/WRITE issued through `SAS_IOC_RW` (or the class layer) go through the
