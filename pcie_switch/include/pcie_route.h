@@ -51,6 +51,11 @@ struct RouteHdr {
     uint8_t  type = 0;                
     uint64_t addr = 0;                
     uint16_t reqid = 0;               
+    int32_t  msg_dest = -1;           
+    uint8_t  at = 0;                  
+    
+    
+    bool     posted = false;
 };
 
 static inline bool tlp_ro(uint8_t attr)  { return ((attr >> 1) & 0x1u) != 0; }        

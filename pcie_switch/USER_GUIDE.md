@@ -119,6 +119,9 @@ Routing rules:
   `mc_mask` bit is set.
 * Broadcast is selected by the broadcast window; every `bc_member` port
   receives a copy.
+* MC/BC replication applies to **posted memory writes only**.  A memory read
+  that falls in the window is an ordinary non-posted unicast request (set
+  `RouteHdr.posted` when calling `classify()` directly).
 * The source port is always excluded (`dst != src`), so broadcast and
   multicast never loop back to the sender.
 * Unrouted traffic is counted; non-posted requests receive an UR completion

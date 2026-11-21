@@ -51,6 +51,19 @@ struct RcModule : sc_core::sc_module {
     
     
     
+    void     send_ats_invalidate(uint16_t dest_reqid = 0);
+    uint64_t ats_inv_tx = 0, ats_inv_cpl_rx = 0, ats_inv_pending = 0;
+    uint64_t ats_inv_timeout = 0;
+    uint64_t ats_inv_sweep(uint64_t expected) {
+        const uint64_t miss = (expected > ats_inv_cpl_rx)
+                                  ? (expected - ats_inv_cpl_rx) : 0;
+        ats_inv_timeout += miss;
+        return miss;
+    }
+    
+    
+    
+    
     uint16_t root_err_cmd = 0;                           
     uint32_t root_err_status = 0;                        
     uint16_t err_src_corr = 0, err_src_uncorr = 0;       

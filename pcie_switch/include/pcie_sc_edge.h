@@ -8,6 +8,7 @@
 #include <systemc>
 #include <cstdint>
 #include <functional>
+#include <unordered_set>
 #include <vector>
 
 namespace pcie_tlm {
@@ -353,6 +354,16 @@ struct EpStubModule : sc_core::sc_module {
     
     
     uint64_t ats_inv_rx = 0, ats_inv_cpl_sent = 0, ats_inv_noenable = 0;
+    
+    
+    
+    
+    std::unordered_set<std::uint64_t> atc_;
+    uint64_t ats_trans_hit = 0, ats_trans_miss = 0, ats_trans_blocked = 0;
+    uint64_t ats_atc_fills = 0, ats_atc_cleared = 0;
+    void ats_atc_prefill(std::uint64_t iova, std::uint64_t size);
+    void ats_atc_clear() { ats_atc_cleared += atc_.size(); atc_.clear(); }
+    std::size_t ats_atc_entries() const { return atc_.size(); }
     
     
     

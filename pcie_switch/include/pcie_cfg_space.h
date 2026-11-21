@@ -191,9 +191,14 @@ struct CfgSpace {
     bool     rom_en = false;
     uint8_t  rom_val_status = 0;             
     uint8_t  rom_val_details = 0;            
-    void set_rom(uint32_t base, uint32_t size, bool en) {
-        rom_size = size; rom_en = en; rom_bar = size ? (base & ~(size - 1)) : base;
-    }
+    
+    
+    
+    
+    std::vector<uint8_t> rom_data;
+    void set_rom(uint32_t base, uint32_t size, bool en);
+    void set_rom_content(const std::vector<uint8_t>& data) { rom_data = data; }
+    void ensure_rom_content();               
     bool rom_match(uint64_t addr) const {    
         if (!rom_en || rom_size == 0) return false;
         if (addr >> 32) return false;        
@@ -227,10 +232,12 @@ struct CfgSpace {
     
     
     
+    
     bool     ats_cap = false;
     uint16_t ats_cap_reg = 0, ats_ctl = 0;
     void set_ats(uint16_t capreg, uint8_t stu) { ats_cap = true; ats_cap_reg = capreg; ats_ctl = (uint16_t)(stu & 0x1Fu); }
     uint32_t ats_stu_bytes() const { return 1u << (ats_ctl & 0x1Fu); }
+    bool ats_en() const { return ats_cap && (ats_ctl & 0x8000u) != 0; }
     
     
     
@@ -271,6 +278,7 @@ struct CfgSpace {
     bool link_clkreq_en() const { return (link_ctl & 0x100u) != 0; }
     bool l1ss_l11_en() const { return (l1ss_ctl & 0x4u) != 0; }      
     bool l1ss_l12_en() const { return (l1ss_ctl & 0x8u) != 0; }      
+    
     
     
     

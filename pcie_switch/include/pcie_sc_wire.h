@@ -32,6 +32,9 @@ struct PrivTlp {
     uint8_t  at = 0;
     uint32_t pasid = 0;
     bool     has_pasid = false;
+    
+    
+    int32_t  msg_dest = -1;
     std::vector<uint8_t> payload;                      
     uint8_t  be8() const { return (uint8_t)((last_be << 4) | first_be); }
     size_t   nbytes() const { return payload.size(); }
