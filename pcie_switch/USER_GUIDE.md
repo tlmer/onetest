@@ -210,8 +210,9 @@ The model keeps all model-related prints. Import them as-is when integrating:
   resources, `[vid:did] type NN class 0x......`, BAR assignments, bridge
   secondary/subordinate buses, and bridge reconfiguration messages.
 * `M6B_TRACE=1` -- co-simulation transaction trace (`[XALI]`, `[EP-AXI]`,
-  `[DN-GATE]`, summary counters).
-* `MODEL_TRACE=1` -- generic model trace in related model lines.
+  `[DN-GATE]`, summary counters); used by the private-port integration host.
+* `trace on` (console command) -- per-testcase TLP tracing in the standalone
+  console.
 
 Do not strip these prints in a release: they are part of the observable
 behavior and are used for acceptance.

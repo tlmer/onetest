@@ -21,7 +21,7 @@ as it is complete:
 | Path | What | Status |
 |---|---|---|
 | [`nvme/`](nvme/) | NVMe task-level stimulus model over AXI4 (standard NVMe layout, admin/IO queues, PRP, phase bits) + control ABI (`nvme_model_ioctl`) | available |
-| [`storage/`](storage/) | block-storage host models (mmc / ahci / ufs / sas / sasv2) + SAS HDD target TLM companion + driver key table + unified storage ioctl | available |
+| [`storage/`](storage/) | block-storage host models (mmc / ahci / ufs / sas) + SAS HDD target TLM companion + driver key table + unified storage ioctl | available |
 | [`network/`](network/) | ethernet IP models (GMAC / XLGMAC) + driver key table + the class layer (netdev/NAPI/flow control) | available |
 | [`usb/`](usb/) | USB host model (DWC_usb3, xHCI) + driver key table + the class layer (SET_CONFIGURATION / endpoints / class drivers) | available |
 | [`pcie/`](pcie/) | PCIe root-complex host model (DWC Root Port, 460A/490A) + driver key table + AXI4 contract (ID=4/8 outstanding/128-bit), DMA-route, control-plane ABI | available |
@@ -30,8 +30,7 @@ as it is complete:
 | [`gpu/mali450/`](gpu/mali450/) | ARM Mali Utgard (Mali-450/400, `lima`) Linux-proxy host model: bring-up/MMU/page tables, GEM + VAs, GP/PP jobs, fences, fault/recovery; control ABI + testcase ABI + DTS template + NoC bridge | available |
 | [`npx/`](npx/) | Synopsys ARC NPX6/VPX host model: remoteproc firmware load, ARCSYNC v1/v2 control, the 7-command app UAPI + testcase control ABI, runtime DTS loader, dma-buf; DTS template + AXI4/DPI NoC bridge | available |
 
-The UALink switch model is published separately as a sibling repository:
-[`tlmer/ualink_switch`](https://github.com/tlmer/ualink_switch).
+The UALink switch model is published separately as a sibling repository.
 
 Each delivery ships source or a binary model library as appropriate, a
 self-test (or console) that builds against the shipped interface, and a single
